@@ -5,5 +5,6 @@ package app.endershrooms.inboxforreddit3.interfaces;
  */
 
 public interface StartLogin {
-    void startLogin();
+
+  void startLogin();
 }

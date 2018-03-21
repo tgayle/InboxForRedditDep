@@ -1,27 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <FrameLayout
-    android:layout_height="match_parent"
-    android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:layout_width="match_parent"
 
-    xmlns:android="http://schemas.android.com/apk/res/android">
+  xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <WebView xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/loginWebView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context="app.endershrooms.inboxforreddit.Activities.LoginWebViewActivity">
+  <android.support.v4.widget.SwipeRefreshLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/login_webview_swiperefresh">
 
+    <WebView
+      xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:tools="http://schemas.android.com/tools"
+      android:id="@+id/loginWebView"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      tools:context="app.endershrooms.inboxforreddit.Activities.LoginWebViewActivity">
     </WebView>
 
-    <ProgressBar
-        android:id="@+id/login_progress"
-        style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone" />
+  </android.support.v4.widget.SwipeRefreshLayout>
+
+
+
+  <ProgressBar
+    android:id="@+id/login_progress"
+    style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:visibility="gone"/>
 
 </FrameLayout>
 

@@ -7,8 +7,11 @@ import android.text.format.DateUtils;
  */
 
 public class MiscFuncs {
+
   public static String getRelativeDateTime(long millis) {
-    return DateUtils.getRelativeTimeSpanString(millis, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS).toString();
+    return DateUtils
+        .getRelativeTimeSpanString(millis, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS)
+        .toString();
   }
 
   public static CharSequence trim(CharSequence s) {

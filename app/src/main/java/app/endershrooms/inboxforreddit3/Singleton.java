@@ -8,16 +8,18 @@ import okhttp3.OkHttpClient;
 
 public class Singleton {
 
-    static Singleton thisSingleton;
+  static Singleton thisSingleton;
 
-    public static Singleton getInstance() {
-        if (thisSingleton == null) thisSingleton = new Singleton();
-        return thisSingleton;
+  public static Singleton getInstance() {
+    if (thisSingleton == null) {
+      thisSingleton = new Singleton();
     }
+    return thisSingleton;
+  }
 
-    private OkHttpClient client = new OkHttpClient();
+  private OkHttpClient client = new OkHttpClient();
 
-    public OkHttpClient client() {
-        return client;
-    }
+  public OkHttpClient client() {
+    return client;
+  }
 }
