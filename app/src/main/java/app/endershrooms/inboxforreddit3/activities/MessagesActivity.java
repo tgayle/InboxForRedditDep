@@ -3,10 +3,15 @@ package app.endershrooms.inboxforreddit3.activities;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.Singleton;
@@ -35,7 +40,8 @@ public class MessagesActivity extends AppCompatActivity {
   protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
-    setContentView(R.layout.activity_messages);
+    setContentView(R.layout.activity_messages_with_drawer);
+    getSupportActionBar().hide();
 
     RedditAccount currentUser = (RedditAccount) getIntent().getSerializableExtra("account");
 
@@ -57,7 +63,37 @@ public class MessagesActivity extends AppCompatActivity {
       }
     });
 
+    final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+    ImageButton drawerExpandAccountsBtn = (ImageButton) findViewById(R.id.drawer_expandusers_btn);
+    final RecyclerView drawerAccountSwitcher = (RecyclerView) findViewById(R.id.activity_messages_drawer_users_list);
 
+    drawerAccountSwitcher.setLayoutManager(new LinearLayoutManager(MessagesActivity.this));
+
+    getMessages(currentUser.getAccessToken(), new OnMessagesFinishedLoading() {
+      @Override
+      public void messagesFinished(final List<Message> messages) {
+        runOnUiThread(new Runnable() {
+          @Override
+          public void run() {
+            drawerAccountSwitcher.setAdapter(new MessagesRecyclerViewAdapter(messages));
+
+          }
+        });
+
+      }
+    });
+
+    drawerExpandAccountsBtn.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        if (drawerAccountSwitcher.getVisibility() == View.GONE) {
+          drawerAccountSwitcher.setVisibility(View.VISIBLE);
+        } else {
+          drawerAccountSwitcher.setVisibility(View.GONE);
+        }
+      }
+    });
+    //    DrawerLayout
   }
 
   void getMessages(String accessToken, final OnMessagesFinishedLoading callback) {
@@ -140,7 +176,6 @@ public class MessagesActivity extends AppCompatActivity {
   }
 
   interface OnMessagesFinishedLoading {
-
     void messagesFinished(List<Message> messages);
   }
 
@@ -153,4 +188,13 @@ public class MessagesActivity extends AppCompatActivity {
     }
   }
 
+  @Override
+  public void onBackPressed() {
+    DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+    if (drawer.isDrawerOpen(GravityCompat.START)) {
+      drawer.closeDrawer(GravityCompat.START);
+    } else {
+      super.onBackPressed();
+    }
+  }
 }

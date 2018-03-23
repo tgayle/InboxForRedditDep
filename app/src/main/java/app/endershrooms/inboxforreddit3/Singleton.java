@@ -1,5 +1,7 @@
 package app.endershrooms.inboxforreddit3;
 
+import android.content.Context;
+import database.DatabaseWrapper;
 import okhttp3.OkHttpClient;
 
 /**
@@ -8,7 +10,10 @@ import okhttp3.OkHttpClient;
 
 public class Singleton {
 
-  static Singleton thisSingleton;
+  private static Singleton thisSingleton;
+  private DatabaseWrapper db = DatabaseWrapper.get();
+  private OkHttpClient client = new OkHttpClient();
+
 
   public static Singleton getInstance() {
     if (thisSingleton == null) {
@@ -17,9 +22,18 @@ public class Singleton {
     return thisSingleton;
   }
 
-  private OkHttpClient client = new OkHttpClient();
+  public DatabaseWrapper prepareDatabase(Context context) {
+    db.prepareDatabase(context);
+    return db;
+  }
+
+  public DatabaseWrapper getDb() {
+    return db;
+  }
 
   public OkHttpClient client() {
     return client;
   }
+
+
 }

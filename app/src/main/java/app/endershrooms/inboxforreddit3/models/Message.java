@@ -1,11 +1,18 @@
 package app.endershrooms.inboxforreddit3.models;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
+
 /**
  * Created by Travis on 1/22/2018.
  */
-
+@Entity(tableName = "messages")
 public class Message {
 
+  @PrimaryKey
+  private int id;
+
+  private String message_owner; //what account should see this message.
   private String message_name;
   private String parent_message_name;
   private String author;
@@ -15,8 +22,9 @@ public class Message {
   private Long timestamp;
   private boolean is_new;
 
-  public Message(String message_name, String parent_message_name, String author, String destination,
+  public Message(String message_owner, String message_name, String parent_message_name, String author, String destination,
       String subject, String message_body, Long timestamp, boolean is_new) {
+    this.message_owner = message_owner;
     this.message_name = message_name;
     this.parent_message_name = parent_message_name;
     this.author = author;
@@ -81,5 +89,21 @@ public class Message {
 
   public void setNew(boolean is_new) {
     this.is_new = is_new;
+  }
+
+  public String getMessageOwner() {
+    return message_owner;
+  }
+
+  public void setMessageOwner(String message_owner) {
+    this.message_owner = message_owner;
+  }
+
+  public int getId() {
+    return id;
+  }
+
+  public void setId(int id) {
+    this.id = id;
   }
 }

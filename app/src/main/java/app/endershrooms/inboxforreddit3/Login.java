@@ -29,13 +29,21 @@ public class Login {
   private RedditAccount account;
   private Context context;
   private static OkHttpClient client = Singleton.getInstance().client();
+  private final LoginUpdateListener loginProgressListener;
 
   public Login(String redirectCode, Context context) {
-    this(redirectCode, context,  null);
+    this(redirectCode, context, null);
   }
 
-  public Login(String redirectCode, final Context context, final LoginUpdateListener loginProgressListener) {
+  public Login(String redirectCode, final Context context,
+      final LoginUpdateListener listener) {
     this.context = context;
+
+    if (listener == null) {
+      this.loginProgressListener = emptyLoginProgressListener();
+    } else {
+      this.loginProgressListener = listener;
+    }
 
     Builder buildAccessTokenRequest = new Builder()
         .url("https://www.reddit.com/api/v1/access_token");
@@ -81,9 +89,7 @@ public class Login {
           final String accessToken = jsonResponse.getString("access_token");
           final String refreshToken = jsonResponse.getString("refresh_token");
 
-              loginProgressListener.updateLoadingText(context.getString(R.string.hello_blank_fragment));
-
-              loginProgressListener.updateLoadingText("Getting user info.");
+          loginProgressListener.updateLoadingText("Getting user info.");
 
           {
 
@@ -106,7 +112,8 @@ public class Login {
                   final String username = new JSONObject(strResponse).getString("name");
                   account = new RedditAccount(username, accessToken, refreshToken);
 
-                  loginProgressListener.updateLoadingText(String.format(context.getString(R.string.login_complete_hello_user), username));
+                  loginProgressListener.updateLoadingText(String
+                      .format(context.getString(R.string.login_complete_hello_user), username));
                   loginProgressListener.onCompleteLogin(account);
 
 
@@ -119,10 +126,22 @@ public class Login {
         } catch (JSONException e) {
           e.printStackTrace();
         }
-
-
       }
     });
+  }
+
+  private LoginUpdateListener emptyLoginProgressListener() {
+    return new LoginUpdateListener() {
+      @Override
+      public void updateLoadingText(String text) {
+
+      }
+
+      @Override
+      public void onCompleteLogin(RedditAccount account) {
+
+      }
+    };
   }
 
   public RedditAccount getAccount() {

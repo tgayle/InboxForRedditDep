@@ -1,12 +1,18 @@
 package app.endershrooms.inboxforreddit3.models;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 import java.io.Serializable;
 
 /**
  * Created by Travis on 3/20/2018.
  */
 
+@Entity(tableName = "accounts")
 public class RedditAccount implements Serializable {
+
+  @PrimaryKey
+  private int id;
 
   private String username;
   private String accessToken;
@@ -16,6 +22,14 @@ public class RedditAccount implements Serializable {
     this.username = username;
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
+  }
+
+  public int getId() {
+    return id;
+  }
+
+  public void setId(int id) {
+    this.id = id;
   }
 
   public String getUsername() {

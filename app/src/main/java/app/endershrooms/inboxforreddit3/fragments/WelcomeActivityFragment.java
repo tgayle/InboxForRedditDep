@@ -16,6 +16,7 @@ import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.activities.MainActivity;
 import app.endershrooms.inboxforreddit3.activities.MessagesActivity;
 import app.endershrooms.inboxforreddit3.models.RedditAccount;
+import com.jakewharton.rxbinding2.view.RxView;
 
 
 public class WelcomeActivityFragment extends Fragment implements MainActivity.LoginUpdateListener {
@@ -62,15 +63,11 @@ public class WelcomeActivityFragment extends Fragment implements MainActivity.Lo
 
         Button loginBtn = (Button) v.findViewById(R.id.login_btn);
 
-        loginBtn.setOnClickListener(new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-            //Intent intent = new Intent(getContext(), LoginWebViewActivity.class);
-            //getActivity().startActivityForResult(intent, 111);
+        RxView.clicks(loginBtn)
+            .subscribe(aVoid -> {
+              ((MainActivity) getActivity()).startLogin();
 
-            ((MainActivity) getActivity()).startLogin();
-          }
-        });
+            });
 
         Log.v("Fragment", "Started welcome fragment!");
         break;
@@ -115,6 +112,7 @@ public class WelcomeActivityFragment extends Fragment implements MainActivity.Lo
                 Intent i = new Intent(getContext(), MessagesActivity.class);
                 i.putExtra("account", account);
                 startActivity(i);
+                getActivity().finish();
 
               }
             }, 2500);
@@ -142,7 +140,6 @@ public class WelcomeActivityFragment extends Fragment implements MainActivity.Lo
 
   public interface OnFragmentInteractionListener {
 
-    // TODO: Update argument type and name
     void onFragmentInteraction(Uri uri);
   }
 

@@ -18,7 +18,6 @@ public class WelcomeActivityViewPagerAdapter extends FragmentStatePagerAdapter {
 
   public WelcomeActivityViewPagerAdapter(FragmentManager fm) {
     super(fm);
-
   }
 
   @Override
