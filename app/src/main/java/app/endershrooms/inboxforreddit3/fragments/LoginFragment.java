@@ -131,13 +131,9 @@ public class LoginFragment extends Fragment {
           String redirect_code = params[1].replace("code=", "");
 
           if (!STATE.equalsIgnoreCase(redirect_state)) {
-            if (BuildConfig.DEBUG) {
               Log.v("OauthLogin", "States did not match before and after!");
-            }
           } else {
-            if (BuildConfig.DEBUG) {
               Log.v("OauthLogin", "States did match! Continuing!");
-            }
           }
 
           if (url.contains("access_denied")) {
@@ -145,7 +141,8 @@ public class LoginFragment extends Fragment {
                 Snackbar.LENGTH_LONG).show();
           }
 
-          loginListener.loginCompleted(redirect_code);
+          loginListener.startLoginProgress(redirect_code);
+
 
         }
       }
@@ -196,7 +193,7 @@ public class LoginFragment extends Fragment {
   }
 
   public interface OnLoginCompleted {
-    void loginCompleted(String code);
+    void startLoginProgress(String code);
   }
 
   interface OnWebviewChange {

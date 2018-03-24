@@ -9,38 +9,40 @@ import android.arch.persistence.room.PrimaryKey;
 @Entity(tableName = "messages")
 public class Message {
 
-  @PrimaryKey
-  private int id;
+  private String messageOwner; //what account should see this message.
 
-  private String message_owner; //what account should see this message.
-  private String message_name;
-  private String parent_message_name;
+  @PrimaryKey
+  @android.support.annotation.NonNull
+  private String messageName;
+
+  private String parentMessageName;
   private String author;
   private String destination;
   private String subject;
-  private String message_body;
-  private Long timestamp;
-  private boolean is_new;
+  private String messageBody;
+  private long timestamp;
+  private boolean isNew;
 
-  public Message(String message_owner, String message_name, String parent_message_name, String author, String destination,
-      String subject, String message_body, Long timestamp, boolean is_new) {
-    this.message_owner = message_owner;
-    this.message_name = message_name;
-    this.parent_message_name = parent_message_name;
+  public Message(String messageOwner, String messageName, String parentMessageName,
+      String author, String destination, String subject, String messageBody,
+      long timestamp, boolean isNew) {
+    this.messageOwner = messageOwner;
+    this.messageName = messageName;
+    this.parentMessageName = parentMessageName;
     this.author = author;
     this.destination = destination;
     this.subject = subject;
-    this.message_body = message_body;
+    this.messageBody = messageBody;
     this.timestamp = timestamp;
-    this.is_new = is_new;
+    this.isNew = isNew;
   }
 
   public String getMessageName() {
-    return message_name;
+    return messageName;
   }
 
   public String getParentMessageName() {
-    return parent_message_name;
+    return parentMessageName;
   }
 
   public String getAuthor() {
@@ -56,7 +58,7 @@ public class Message {
   }
 
   public String getMessageBody() {
-    return message_body;
+    return messageBody;
   }
 
   public Long getTimestamp() {
@@ -64,7 +66,7 @@ public class Message {
   }
 
   public boolean getNew() {
-    return is_new;
+    return isNew;
   }
 
   public void setAuthor(String author) {
@@ -80,30 +82,31 @@ public class Message {
   }
 
   public void setMessageBody(String message_body) {
-    this.message_body = message_body;
+    this.messageBody = message_body;
   }
 
   public void setTimestamp(Long timestamp) {
     this.timestamp = timestamp;
   }
 
+  public void setMessageName(String messageName) {
+    this.messageName = messageName;
+  }
+
+  public void setParentMessageName(String parentMessageName) {
+    this.parentMessageName = parentMessageName;
+  }
+
   public void setNew(boolean is_new) {
-    this.is_new = is_new;
+    this.isNew = is_new;
   }
 
   public String getMessageOwner() {
-    return message_owner;
+    return messageOwner;
   }
 
   public void setMessageOwner(String message_owner) {
-    this.message_owner = message_owner;
+    this.messageOwner = message_owner;
   }
 
-  public int getId() {
-    return id;
-  }
-
-  public void setId(int id) {
-    this.id = id;
-  }
 }

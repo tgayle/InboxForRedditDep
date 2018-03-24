@@ -10,7 +10,7 @@ import database.dao.MessageDao;
 /**
  * Created by Travis on 3/23/2018.
  */
-@Database(entities = {RedditAccount.class, Message.class}, version = 0)
+@Database(entities = {RedditAccount.class, Message.class}, version = 1)
 public abstract class AppDatabase extends RoomDatabase{
   public abstract AccountDao accounts();
   public abstract MessageDao messages();

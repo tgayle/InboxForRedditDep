@@ -13,10 +13,16 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import app.endershrooms.inboxforreddit3.R;
+import app.endershrooms.inboxforreddit3.Singleton;
 import app.endershrooms.inboxforreddit3.activities.MainActivity;
 import app.endershrooms.inboxforreddit3.activities.MessagesActivity;
 import app.endershrooms.inboxforreddit3.models.RedditAccount;
 import com.jakewharton.rxbinding2.view.RxView;
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 
 public class WelcomeActivityFragment extends Fragment implements MainActivity.LoginUpdateListener {
@@ -29,6 +35,7 @@ public class WelcomeActivityFragment extends Fragment implements MainActivity.Lo
   }
 
   private FragmentProgress progress;
+  private Observer<String> loginProgressObserver;
 
   public WelcomeActivityFragment() {
     // Required empty public constructor
@@ -49,6 +56,32 @@ public class WelcomeActivityFragment extends Fragment implements MainActivity.Lo
     if (getArguments() != null) {
       this.progress = (FragmentProgress) getArguments().getSerializable("progress");
     }
+
+    loginProgressObserver = new Observer<String>() {
+      @Override
+      public void onSubscribe(Disposable d) {
+
+      }
+
+      @Override
+      public void onNext(String s) {
+        if (progress == FragmentProgress.LOADING && getView() != null) {
+          TextView tv = (TextView) getView().findViewById(R.id.progress_tv);
+          tv.setText(s);
+        }
+
+      }
+
+      @Override
+      public void onError(Throwable e) {
+
+      }
+
+      @Override
+      public void onComplete() {
+
+      }
+    };
   }
 
   @Override
@@ -66,7 +99,6 @@ public class WelcomeActivityFragment extends Fragment implements MainActivity.Lo
         RxView.clicks(loginBtn)
             .subscribe(aVoid -> {
               ((MainActivity) getActivity()).startLogin();
-
             });
 
         Log.v("Fragment", "Started welcome fragment!");
@@ -89,37 +121,88 @@ public class WelcomeActivityFragment extends Fragment implements MainActivity.Lo
   public void updateLoadingText(final String text) {
     if (progress == FragmentProgress.LOADING && getView() != null) {
 
-      getActivity().runOnUiThread(new Runnable() {
-        @Override
-        public void run() {
-          TextView tv = (TextView) getView().findViewById(R.id.progress_tv);
-          tv.setText(text);
-        }
-      });
+      Observable.just(text)
+          .subscribeOn(AndroidSchedulers.mainThread())
+          .subscribe(o -> {
+            TextView tv = (TextView) getView().findViewById(R.id.progress_tv);
+            tv.setText(o);
+          });
+
+//      getActivity().runOnUiThread(new Runnable() {
+//        @Override
+//        public void run() {
+//          TextView tv = (TextView) getView().findViewById(R.id.progress_tv);
+//          tv.setText(text);
+//        }
+//      });
 
     }
   }
 
   @Override
   public void onCompleteLogin(final RedditAccount account) {
-    getActivity().runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        new Handler()
-            .postDelayed(new Runnable() {
-              @Override
-              public void run() {
-                Intent i = new Intent(getContext(), MessagesActivity.class);
-                i.putExtra("account", account);
-                startActivity(i);
-                getActivity().finish();
 
-              }
-            }, 2500);
-      }
-    });
+//    ConnectableObservable<RedditAccount> observed = Observable.just(account).publish();
+
+    Observable.just(account)
+        .subscribeOn(Schedulers.io())
+        .subscribe(acc -> {
+          Singleton.getInstance().getDb().accounts().addAccount(account);
+        });
+
+    Observable.just(account)
+        .subscribeOn(AndroidSchedulers.mainThread())
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(acc -> {
+          new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+              Intent i = new Intent(getContext(), MessagesActivity.class);
+              i.putExtra("account", account);
+              startActivity(i);
+              getActivity().finish();
+            }
+          }, 2500);
+        });
+//    observed.subscribeOn(Schedulers.io())
+//        .subscribe(acc -> {
+//          Singleton.getInstance().getDb().accounts().addAccount(account);
+//        });
+
+//    observed
+//        .subscribeOn(AndroidSchedulers.mainThread())
+//        .observeOn(AndroidSchedulers.mainThread())
+//        .subscribe(acc -> {
+//          new Handler().postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//              Intent i = new Intent(getContext(), MessagesActivity.class);
+//              i.putExtra("account", account);
+//              startActivity(i);
+//              getActivity().finish();
+//            }
+//          }, 2500);
+//        });
+//
+//    observed.connect();
+
+//
+//    observable.conn
+
+//    Single.just(account)
+//        .observeOn(AndroidSchedulers.mainThread())
+//        .subscribe(acc -> {
+//            new Handler()
+//              .postDelayed(() -> {
+//      Intent i = new Intent(getContext(), MessagesActivity.class);
+//      i.putExtra("account", account);
+//      startActivity(i);
+//      getActivity().finish();
+//
+//    }, 2500);
+//        });
+//      }
   }
-
   @Override
   public void onAttach(Context context) {
     super.onAttach(context);

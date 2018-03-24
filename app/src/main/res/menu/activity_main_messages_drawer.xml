@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+  xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group
+        android:id="@+id/nav_subreddit_menu">
+    </group>
+
+    <group
+        android:id="@+id/nav_messages_group"
+        android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/nav_inbox"
+            android:title="Inbox" />
+        <item
+            android:id="@+id/nav_unread"
+            android:title="Unread" />
+        <item
+            android:id="@+id/nav_messages"
+            android:title="Messages" />
+        <item
+            android:id="@+id/nav_sent"
+            android:title="Sent" />
+
+        <item
+            android:id="@+id/logout_button_messages"
+            android:title="Logout"
+            />
+
+
+    </group>
+
+</menu>

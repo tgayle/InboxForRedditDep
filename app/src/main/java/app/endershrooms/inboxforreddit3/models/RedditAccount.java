@@ -2,6 +2,7 @@ package app.endershrooms.inboxforreddit3.models;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
+import android.support.annotation.NonNull;
 import java.io.Serializable;
 
 /**
@@ -11,9 +12,7 @@ import java.io.Serializable;
 @Entity(tableName = "accounts")
 public class RedditAccount implements Serializable {
 
-  @PrimaryKey
-  private int id;
-
+  @PrimaryKey @NonNull
   private String username;
   private String accessToken;
   private String refreshToken;
@@ -22,14 +21,6 @@ public class RedditAccount implements Serializable {
     this.username = username;
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
-  }
-
-  public int getId() {
-    return id;
-  }
-
-  public void setId(int id) {
-    this.id = id;
   }
 
   public String getUsername() {

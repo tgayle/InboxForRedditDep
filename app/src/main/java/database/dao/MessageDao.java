@@ -34,12 +34,12 @@ public interface MessageDao {
   @Delete
   public int deleteMessages(List<Message> messages);
 
-  @Query("SELECT * FROM messages WHERE message_owner LIKE :account ORDER BY timestamp ASC")
+  @Query("SELECT * FROM messages WHERE messageOwner LIKE :account ORDER BY timestamp ASC")
   public List<Message> getAllUserMessages(String account);
 
   @Query("SELECT * FROM messages")
   public List<Message> getAllMessagesFromAllAccounts();
 
-  @Query("SELECT * FROM messages WHERE message_owner LIKE :account AND parent_message_name LIKE :parentname ORDER BY timestamp ASC")
+  @Query("SELECT * FROM messages WHERE messageOwner LIKE :account AND parentMessageName LIKE :parentname ORDER BY timestamp ASC")
   public List<Message> getAllMessagesFromConversation(String account, String parentname);
 }

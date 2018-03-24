@@ -7,6 +7,8 @@ import android.util.Base64;
 import android.util.Log;
 import app.endershrooms.inboxforreddit3.activities.MainActivity.LoginUpdateListener;
 import app.endershrooms.inboxforreddit3.models.RedditAccount;
+import io.reactivex.Observer;
+import io.reactivex.SingleObserver;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -29,32 +31,26 @@ public class Login {
   private RedditAccount account;
   private Context context;
   private static OkHttpClient client = Singleton.getInstance().client();
-  private final LoginUpdateListener loginProgressListener;
 
-  public Login(String redirectCode, Context context) {
-    this(redirectCode, context, null);
-  }
+//  public Login(String redirectCode, Context context) {
+//    this(redirectCode, context, null);
+//  }
 
   public Login(String redirectCode, final Context context,
-      final LoginUpdateListener listener) {
+      final Observer<String> onUpdateText, SingleObserver<RedditAccount> onAccountLoaded) {
     this.context = context;
 
-    if (listener == null) {
-      this.loginProgressListener = emptyLoginProgressListener();
-    } else {
-      this.loginProgressListener = listener;
-    }
 
     Builder buildAccessTokenRequest = new Builder()
         .url("https://www.reddit.com/api/v1/access_token");
 
-    loginProgressListener.updateLoadingText("Preparing token params");
+    onUpdateText.onNext("Preparing token params");
     HashMap<String, String> tokenParams = new HashMap<>();
     tokenParams.put("grant_type", "authorization_code");
     tokenParams.put("code", redirectCode);
     tokenParams.put("redirect_uri", Constants.OAUTH_REDIRECT_URI);
 
-    loginProgressListener.updateLoadingText("Preparing headers");
+    onUpdateText.onNext("Preparing headers");
     HashMap<String, String> headers = new HashMap<>();
     String creds = Constants.CLIENT_ID + ":" + "";
     headers
@@ -72,7 +68,7 @@ public class Login {
     buildAccessTokenRequest.post(body.build());
     Request request = buildAccessTokenRequest.build();
 
-    loginProgressListener.updateLoadingText("Getting access token.");
+    onUpdateText.onNext("Getting access token.");
     client.newCall(request).enqueue(new Callback() {
       @Override
       public void onFailure(Call call, IOException e) {
@@ -89,7 +85,7 @@ public class Login {
           final String accessToken = jsonResponse.getString("access_token");
           final String refreshToken = jsonResponse.getString("refresh_token");
 
-          loginProgressListener.updateLoadingText("Getting user info.");
+          onUpdateText.onNext("Getting user info.");
 
           {
 
@@ -112,9 +108,9 @@ public class Login {
                   final String username = new JSONObject(strResponse).getString("name");
                   account = new RedditAccount(username, accessToken, refreshToken);
 
-                  loginProgressListener.updateLoadingText(String
+                  onUpdateText.onNext(String
                       .format(context.getString(R.string.login_complete_hello_user), username));
-                  loginProgressListener.onCompleteLogin(account);
+                  onAccountLoaded.onSuccess(account);
 
 
                 } catch (JSONException e) {
