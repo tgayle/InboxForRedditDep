@@ -1,11 +1,11 @@
-package database;
+package app.endershrooms.inboxforreddit3.database;
 
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.RoomDatabase;
+import app.endershrooms.inboxforreddit3.database.dao.AccountDao;
+import app.endershrooms.inboxforreddit3.database.dao.MessageDao;
 import app.endershrooms.inboxforreddit3.models.Message;
 import app.endershrooms.inboxforreddit3.models.RedditAccount;
-import database.dao.AccountDao;
-import database.dao.MessageDao;
 
 /**
  * Created by Travis on 3/23/2018.

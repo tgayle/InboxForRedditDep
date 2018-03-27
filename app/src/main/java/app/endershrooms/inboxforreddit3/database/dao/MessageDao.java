@@ -1,4 +1,4 @@
-package database.dao;
+package app.endershrooms.inboxforreddit3.database.dao;
 
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
@@ -7,6 +7,7 @@ import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 import app.endershrooms.inboxforreddit3.models.Message;
+import io.reactivex.Flowable;
 import java.util.List;
 
 /**
@@ -35,11 +36,14 @@ public interface MessageDao {
   public int deleteMessages(List<Message> messages);
 
   @Query("SELECT * FROM messages WHERE messageOwner LIKE :account ORDER BY timestamp ASC")
-  public List<Message> getAllUserMessages(String account);
+  public List<Message> getAllUserMessagesAsc(String account); //Oldest First
+
+  @Query("SELECT * FROM messages WHERE messageOwner LIKE :account ORDER BY timestamp DESC")
+  public List<Message> getAllUserMessagesDesc(String account); //Newest First
 
   @Query("SELECT * FROM messages")
-  public List<Message> getAllMessagesFromAllAccounts();
+  public Flowable<List<Message>> getAllMessagesFromAllAccounts();
 
   @Query("SELECT * FROM messages WHERE messageOwner LIKE :account AND parentMessageName LIKE :parentname ORDER BY timestamp ASC")
-  public List<Message> getAllMessagesFromConversation(String account, String parentname);
+  public Flowable<List<Message>> getAllMessagesFromConversation(String account, String parentname);
 }

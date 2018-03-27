@@ -147,7 +147,7 @@ public class WelcomeActivityFragment extends Fragment implements MainActivity.Lo
     Observable.just(account)
         .subscribeOn(Schedulers.io())
         .subscribe(acc -> {
-          Singleton.getInstance().getDb().accounts().addAccount(account);
+          Singleton.get().getDb().accounts().addAccount(account);
         });
 
     Observable.just(account)
@@ -166,7 +166,7 @@ public class WelcomeActivityFragment extends Fragment implements MainActivity.Lo
         });
 //    observed.subscribeOn(Schedulers.io())
 //        .subscribe(acc -> {
-//          Singleton.getInstance().getDb().accounts().addAccount(account);
+//          Singleton.get().getDb().accounts().addAccount(account);
 //        });
 
 //    observed

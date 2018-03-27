@@ -1,5 +1,6 @@
 package app.endershrooms.inboxforreddit3.models;
 
+import android.annotation.SuppressLint;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
@@ -16,11 +17,13 @@ public class RedditAccount implements Serializable {
   private String username;
   private String accessToken;
   private String refreshToken;
+  private long   tokenExpirationDate;
 
-  public RedditAccount(String username, String accessToken, String refreshToken) {
+  public RedditAccount(String username, String accessToken, String refreshToken, long tokenExpirationDate) {
     this.username = username;
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
+    this.tokenExpirationDate = tokenExpirationDate;
   }
 
   public String getUsername() {
@@ -45,5 +48,31 @@ public class RedditAccount implements Serializable {
 
   public void setRefreshToken(String refreshToken) {
     this.refreshToken = refreshToken;
+  }
+
+  public long getTokenExpirationDate() {
+    return tokenExpirationDate;
+  }
+
+  public void setTokenExpirationDate(long tokenExpirationDate) {
+    this.tokenExpirationDate = tokenExpirationDate;
+  }
+
+  public String getAuthentication() {
+    return "  bearer " + accessToken;
+  }
+
+  public static String getAuthentication(String accessToken) {
+    return " bearer " + accessToken;
+  }
+
+  @SuppressLint("DefaultLocale")
+  public String loggingInfo() {
+    String formatted = "Username: %s %n"
+        + "AToken: %s %n"
+        + "RToken: %s %n"
+        + "Expires: %d %n";
+
+    return String.format(formatted, username, accessToken, refreshToken, tokenExpirationDate);
   }
 }

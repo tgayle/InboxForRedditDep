@@ -30,7 +30,7 @@ public class Login {
 
   private RedditAccount account;
   private Context context;
-  private static OkHttpClient client = Singleton.getInstance().client();
+  private static OkHttpClient client = Singleton.get().client();
 
 //  public Login(String redirectCode, Context context) {
 //    this(redirectCode, context, null);
@@ -84,7 +84,7 @@ public class Login {
           JSONObject jsonResponse = new JSONObject(strResponse);
           final String accessToken = jsonResponse.getString("access_token");
           final String refreshToken = jsonResponse.getString("refresh_token");
-
+          final long expiresOn = jsonResponse.getLong("expires_in");
           onUpdateText.onNext("Getting user info.");
 
           {
@@ -106,7 +106,7 @@ public class Login {
                 Log.v("UserInfo", strResponse);
                 try {
                   final String username = new JSONObject(strResponse).getString("name");
-                  account = new RedditAccount(username, accessToken, refreshToken);
+                  account = new RedditAccount(username, accessToken, refreshToken, System.currentTimeMillis() + (expiresOn * 1000));
 
                   onUpdateText.onNext(String
                       .format(context.getString(R.string.login_complete_hello_user), username));

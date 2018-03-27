@@ -1,4 +1,4 @@
-package database.dao;
+package app.endershrooms.inboxforreddit3.database.dao;
 
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
@@ -8,6 +8,7 @@ import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 import app.endershrooms.inboxforreddit3.models.RedditAccount;
 import io.reactivex.Flowable;
+import java.util.List;
 
 /**
  * Created by Travis on 3/23/2018.
@@ -25,8 +26,8 @@ public interface AccountDao {
   public int removeAccount(RedditAccount account);
 
   @Query("SELECT * FROM accounts")
-  public Flowable<RedditAccount> getAllAccounts();
+  public Flowable<List<RedditAccount>> getAllAccounts();
 
   @Query("SELECT * FROM accounts WHERE username LIKE :name")
-  public Flowable<RedditAccount> getAccountFromName(String name);
+  public Flowable<List<RedditAccount>> getAccountFromName(String name);
 }

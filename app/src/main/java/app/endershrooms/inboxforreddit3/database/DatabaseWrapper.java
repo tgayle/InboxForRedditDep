@@ -1,4 +1,4 @@
-package database;
+package app.endershrooms.inboxforreddit3.database;
 
 import android.arch.persistence.room.Room;
 import android.content.Context;

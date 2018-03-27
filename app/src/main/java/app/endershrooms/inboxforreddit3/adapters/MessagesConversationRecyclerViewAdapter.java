@@ -3,6 +3,8 @@ package app.endershrooms.inboxforreddit3.adapters;
 import static app.endershrooms.inboxforreddit3.MiscFuncs.noTrailingwhiteLines;
 import static app.endershrooms.inboxforreddit3.MiscFuncs.trim;
 
+import android.graphics.Color;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.Html;
@@ -12,8 +14,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import app.endershrooms.inboxforreddit3.MiscFuncs;
 import app.endershrooms.inboxforreddit3.R;
+import app.endershrooms.inboxforreddit3.models.Conversation;
 import app.endershrooms.inboxforreddit3.models.Message;
 import java.util.List;
 
@@ -21,14 +25,14 @@ import java.util.List;
  * Created by Travis on 1/22/2018.
  */
 
-public class MessagesRecyclerViewAdapter extends
-    RecyclerView.Adapter<MessagesRecyclerViewAdapter.Viewholder> {
+public class MessagesConversationRecyclerViewAdapter extends
+    RecyclerView.Adapter<MessagesConversationRecyclerViewAdapter.Viewholder> {
 
-  List<Message> messages;
+  List<Conversation> conversations;
 
-  public MessagesRecyclerViewAdapter(List<Message> messages) {
-    this.messages = messages;
-    Log.v("Adapter", "created with size " + messages.size());
+  public MessagesConversationRecyclerViewAdapter(List<Conversation> convos) {
+    this.conversations = convos;
+    Log.v("ConversationAdapter", "created with size " + conversations.size());
   }
 
   @Override
@@ -39,41 +43,63 @@ public class MessagesRecyclerViewAdapter extends
 
   @Override
   public void onBindViewHolder(Viewholder vh, int position) {
-    final Message message = messages.get(vh.getAdapterPosition());
-    final String trimmedMsg = message.getMessageBody().trim();
+    Conversation thisConvo = conversations.get(vh.getAdapterPosition());
+    Message message = thisConvo.getMessages().get(thisConvo.getMessages().size() - 1); //Last Message
+    String trimmedMsg = message.getMessageBody().trim();
 
     vh.subjectTv.setText(message.getSubject());
-    vh.usernameTv.setText(message.getAuthor());
+    if (message.getMessageOwner().equals(message.getAuthor())) {
+      vh.usernameTv.setText(message.getDestination());
+      vh.sentReceivedIv.setRotation(180f);
+    } else {
+      vh.usernameTv.setText(message.getAuthor());
+      vh.sentReceivedIv.setRotation(0f);
+    }
+
+    if (message.getNew()) {
+      vh.usernameTv.setTextColor(ContextCompat.getColor(vh.usernameTv.getContext(), R.color.unread_message));
+    } else {
+      vh.usernameTv.setTextColor(Color.BLACK);
+    }
+
     vh.dateTv.setText(MiscFuncs.getRelativeDateTime(message.getTimestamp()));
 
     vh.messageTv.setText(trim(Html.fromHtml(noTrailingwhiteLines(trimmedMsg)))); //Not trimming a second time adds weird whitespace?
+    vh.messageTv.setMaxLines(2);
     vh.parentCardView.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        debugLog(message.getMessageName(), noTrailingwhiteLines(message.getMessageBody()));
+        Toast.makeText(v.getContext(), "Conversation Clicked " + vh.getAdapterPosition(), Toast.LENGTH_SHORT).show();
       }
     });
 
   }
 
-  public void addMessage(Message message) {
-    this.messages.add(message);
-    notifyItemInserted(messages.size());
+  public void addConversation(Conversation convo) {
+    this.conversations.add(convo);
+    notifyItemInserted(conversations.size());
   }
 
   @Override
   public int getItemCount() {
-    return messages.size();
+    return conversations.size();
   }
 
-  public void addMessages(List<Message> messages) {
-    int initSize = this.messages.size();
-    Log.v("Adapter", "pre "+ this.messages.size());
-    this.messages.addAll(messages);
-    Log.v("Adapter", "post "+ this.messages.size());
+  public void addConversations(List<Conversation> convos) {
+    int initSize = this.conversations.size();
+    Log.v("ConvoAdapter", "pre "+ this.conversations.size());
 
+    this.conversations.addAll(convos);
+    Log.v("ConvoAdapter", "post "+ this.conversations.size());
+
+//    notifyDataSetChanged();
+    notifyItemRangeInserted(initSize, conversations.size());
+  }
+
+  public void animateRemoval() {
+//    TODO: Proper animation.
+    conversations.clear();
     notifyDataSetChanged();
-//    notifyItemRangeInserted(initSize, messages.size());
   }
 
   class Viewholder extends ViewHolder {
