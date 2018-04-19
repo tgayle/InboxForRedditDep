@@ -4,8 +4,8 @@ import android.arch.persistence.room.Room;
 import android.content.Context;
 import android.util.Log;
 import app.endershrooms.inboxforreddit3.database.AppDatabase;
-import app.endershrooms.inboxforreddit3.net.RedditApiNonOauth;
-import app.endershrooms.inboxforreddit3.net.RedditApiOauth;
+import app.endershrooms.inboxforreddit3.net.RedditApi;
+import io.reactivex.schedulers.Schedulers;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map.Entry;
@@ -29,10 +29,9 @@ public class Singleton {
   private AppDatabase db;
   private OkHttpClient client;
   private Retrofit retrofitOauth;
-  private Retrofit retrofitNonOauth;
-  private RedditApiOauth redditApiOauth;
-  private RedditApiNonOauth redditApiNonOauth;
-
+  private RedditApi redditApiOauth;
+  private RxJava2CallAdapterFactory rxCallAdapter = RxJava2CallAdapterFactory.createWithScheduler(
+      Schedulers.io());
 
   public static Singleton get() {
     if (thisSingleton == null) {
@@ -54,64 +53,47 @@ public class Singleton {
 
   public OkHttpClient client() {
     if (client == null) {
-      client = new Builder()
-          .addInterceptor(new Interceptor() {
-            @Override
-            public Response intercept(Chain chain) throws IOException {
-              final Request original = chain.request();
-              final HttpUrl originalHttpUrl = original.url();
-              final Response response = chain.proceed(original);
-              Log.v("ClientWork", originalHttpUrl.toString());
-              for (Entry<String, List<String>> stringListEntry : original.headers().toMultimap()
-                  .entrySet()) {
-                Log.v("ClientWork", String.format("%s -> %s", stringListEntry.getKey(), stringListEntry.getValue()));
-              }
+      OkHttpClient.Builder builder = new Builder();
+      Interceptor interceptor = new Interceptor() {
+        @Override
+        public Response intercept(Chain chain) throws IOException {
+          final Request original = chain.request();
+          final HttpUrl originalHttpUrl = original.url();
+          final Response response = chain.proceed(original);
+          Log.v("ClientWork", originalHttpUrl.toString());
+          for (Entry<String, List<String>> stringListEntry : original.headers().toMultimap()
+              .entrySet()) {
+            Log.v("ClientWork", String.format("%s -> %s", stringListEntry.getKey(), stringListEntry.getValue()));
+          }
 //              Log.v("ClientWork", original.body().toString());
 //              Log.v("ClientWork", response.body().string());
 //              Log.v("ClientWork", response.code() + "");
-              return response;
-            }
-          }).build();
+          return response;
+        }
+      };
+//          builder.addInterceptor(interceptor)
+      client = builder.build();
     }
     return client;
   }
 
-  public Retrofit getRetrofitOauth() {
+  private Retrofit getRetrofitOauth() {
     if (retrofitOauth == null) {
       retrofitOauth = new Retrofit.Builder()
           .baseUrl("https://oauth.reddit.com/")
           .client(client())
           .addConverterFactory(GsonConverterFactory.create())
-          .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+          .addCallAdapterFactory(rxCallAdapter)
           .build();
     }
     return retrofitOauth;
   }
 
-  public Retrofit getRetrofitNonOauth() {
-    if (retrofitNonOauth == null) {
-      retrofitNonOauth = new Retrofit.Builder()
-          .baseUrl("https://www.reddit.com/")
-          .client(client())
-          .addConverterFactory(GsonConverterFactory.create())
-          .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-          .build();
-    }
-    return retrofitNonOauth;
-  }
-
-  public RedditApiOauth getRedditApiOauth() {
+  public RedditApi getRedditApiOauth() {
     if (redditApiOauth == null) {
-      redditApiOauth = getRetrofitOauth().create(RedditApiOauth.class);
+      redditApiOauth = getRetrofitOauth().create(RedditApi.class);
     }
     return redditApiOauth;
-  }
-
-  public RedditApiNonOauth getRedditApiNonOauth() {
-    if (redditApiNonOauth == null) {
-      redditApiNonOauth = getRetrofitNonOauth().create(RedditApiNonOauth.class);
-    }
-    return redditApiNonOauth;
   }
 
 }

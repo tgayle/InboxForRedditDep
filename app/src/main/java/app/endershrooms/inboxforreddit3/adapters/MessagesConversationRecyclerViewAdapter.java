@@ -28,7 +28,7 @@ import java.util.List;
 public class MessagesConversationRecyclerViewAdapter extends
     RecyclerView.Adapter<MessagesConversationRecyclerViewAdapter.Viewholder> {
 
-  List<Conversation> conversations;
+  private List<Conversation> conversations;
 
   public MessagesConversationRecyclerViewAdapter(List<Conversation> convos) {
     this.conversations = convos;
@@ -46,7 +46,6 @@ public class MessagesConversationRecyclerViewAdapter extends
     Conversation thisConvo = conversations.get(vh.getAdapterPosition());
     Message message = thisConvo.getMessages().get(thisConvo.getMessages().size() - 1); //Last Message
     String trimmedMsg = message.getMessageBody().trim();
-
     vh.subjectTv.setText(message.getSubject());
     if (message.getMessageOwner().equals(message.getAuthor())) {
       vh.usernameTv.setText(message.getDestination());

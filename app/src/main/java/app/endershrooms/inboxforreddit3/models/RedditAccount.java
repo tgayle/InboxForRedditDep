@@ -1,9 +1,12 @@
 package app.endershrooms.inboxforreddit3.models;
 
 import android.annotation.SuppressLint;
+import android.arch.persistence.room.Embedded;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
+import app.endershrooms.inboxforreddit3.account.Token.AccessToken;
+import app.endershrooms.inboxforreddit3.account.Token.RefreshToken;
 import java.io.Serializable;
 
 /**
@@ -15,15 +18,21 @@ public class RedditAccount implements Serializable {
 
   @PrimaryKey @NonNull
   private String username;
-  private String accessToken;
-  private String refreshToken;
-  private long   tokenExpirationDate;
+  @Embedded(prefix = "access_token_")
+  private AccessToken accessToken;
+  @Embedded(prefix = "refresh_token_")
+  private RefreshToken refreshToken;
 
-  public RedditAccount(String username, String accessToken, String refreshToken, long tokenExpirationDate) {
+//  public RedditAccount(String username, String accessToken, String refreshToken, long tokenExpirationDate) {
+//    this.username = username;
+//    this.accessToken = new AccessToken(accessToken, tokenExpirationDate);
+//    this.refreshToken = new RefreshToken(refreshToken);
+//  }
+//
+  public RedditAccount(String username, AccessToken accessToken, RefreshToken refreshToken) {
     this.username = username;
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
-    this.tokenExpirationDate = tokenExpirationDate;
   }
 
   public String getUsername() {
@@ -34,28 +43,20 @@ public class RedditAccount implements Serializable {
     this.username = username;
   }
 
-  public String getAccessToken() {
+  public AccessToken getAccessToken() {
     return accessToken;
   }
 
-  public void setAccessToken(String accessToken) {
+  public void setAccessToken(AccessToken accessToken) {
     this.accessToken = accessToken;
   }
 
-  public String getRefreshToken() {
+  public RefreshToken getRefreshToken() {
     return refreshToken;
   }
 
-  public void setRefreshToken(String refreshToken) {
+  public void setRefreshToken(RefreshToken refreshToken) {
     this.refreshToken = refreshToken;
-  }
-
-  public long getTokenExpirationDate() {
-    return tokenExpirationDate;
-  }
-
-  public void setTokenExpirationDate(long tokenExpirationDate) {
-    this.tokenExpirationDate = tokenExpirationDate;
   }
 
   public String getAuthentication() {
@@ -66,6 +67,11 @@ public class RedditAccount implements Serializable {
     return " bearer " + accessToken;
   }
 
+  @Override
+  public String toString() {
+    return username;
+  }
+
   @SuppressLint("DefaultLocale")
   public String loggingInfo() {
     String formatted = "Username: %s %n"
@@ -73,6 +79,6 @@ public class RedditAccount implements Serializable {
         + "RToken: %s %n"
         + "Expires: %d %n";
 
-    return String.format(formatted, username, accessToken, refreshToken, tokenExpirationDate);
+    return String.format(formatted, username, accessToken, refreshToken, accessToken.getExpiresIn());
   }
 }

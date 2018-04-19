@@ -25,7 +25,7 @@ import org.json.JSONObject;
 /**
  * Created by Travis on 3/20/2018.
  */
-
+@Deprecated
 public class Login {
 
   private RedditAccount account;
@@ -106,7 +106,7 @@ public class Login {
                 Log.v("UserInfo", strResponse);
                 try {
                   final String username = new JSONObject(strResponse).getString("name");
-                  account = new RedditAccount(username, accessToken, refreshToken, System.currentTimeMillis() + (expiresOn * 1000));
+                  //account = new RedditAccount(username, accessToken, refreshToken, System.currentTimeMillis() + (expiresOn * 1000));
 
                   onUpdateText.onNext(String
                       .format(context.getString(R.string.login_complete_hello_user), username));

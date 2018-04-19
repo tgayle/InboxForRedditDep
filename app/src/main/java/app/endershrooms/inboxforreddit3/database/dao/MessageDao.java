@@ -18,10 +18,10 @@ import java.util.List;
 public interface MessageDao {
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
-  public void insertMessage(Message message);
+  public Long insertMessage(Message message);
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
-  public void insertMessages(List<Message> messages);
+  public List<Long> insertMessages(List<Message> messages);
 
   @Update
   public void updateMessage(Message message);
@@ -36,10 +36,10 @@ public interface MessageDao {
   public int deleteMessages(List<Message> messages);
 
   @Query("SELECT * FROM messages WHERE messageOwner LIKE :account ORDER BY timestamp ASC")
-  public List<Message> getAllUserMessagesAsc(String account); //Oldest First
+  public Flowable<List<Message>> getAllUserMessagesAsc(String account); //Oldest First
 
   @Query("SELECT * FROM messages WHERE messageOwner LIKE :account ORDER BY timestamp DESC")
-  public List<Message> getAllUserMessagesDesc(String account); //Newest First
+  public Flowable<List<Message>> getAllUserMessagesDesc(String account); //Newest First
 
   @Query("SELECT * FROM messages")
   public Flowable<List<Message>> getAllMessagesFromAllAccounts();

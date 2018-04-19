@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -142,66 +141,24 @@ public class WelcomeActivityFragment extends Fragment implements MainActivity.Lo
   @Override
   public void onCompleteLogin(final RedditAccount account) {
 
-//    ConnectableObservable<RedditAccount> observed = Observable.just(account).publish();
-
     Observable.just(account)
         .subscribeOn(Schedulers.io())
         .subscribe(acc -> {
           Singleton.get().getDb().accounts().addAccount(account);
         });
-
+//    TODO: Move these two into one observable.
     Observable.just(account)
-        .subscribeOn(AndroidSchedulers.mainThread())
+        .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(acc -> {
-          new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-              Intent i = new Intent(getContext(), MessagesActivity.class);
-              i.putExtra("account", account);
-              startActivity(i);
-              getActivity().finish();
-            }
-          }, 2500);
-        });
-//    observed.subscribeOn(Schedulers.io())
-//        .subscribe(acc -> {
-//          Singleton.get().getDb().accounts().addAccount(account);
-//        });
-
-//    observed
-//        .subscribeOn(AndroidSchedulers.mainThread())
-//        .observeOn(AndroidSchedulers.mainThread())
-//        .subscribe(acc -> {
-//          new Handler().postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//              Intent i = new Intent(getContext(), MessagesActivity.class);
-//              i.putExtra("account", account);
-//              startActivity(i);
-//              getActivity().finish();
-//            }
+          Intent i = new Intent(getActivity(), MessagesActivity.class);
+          i.putExtra("account", account);
+          startActivity(i);
+          getActivity().finish();
+//          new Handler().postDelayed(() -> {
+//
 //          }, 2500);
-//        });
-//
-//    observed.connect();
-
-//
-//    observable.conn
-
-//    Single.just(account)
-//        .observeOn(AndroidSchedulers.mainThread())
-//        .subscribe(acc -> {
-//            new Handler()
-//              .postDelayed(() -> {
-//      Intent i = new Intent(getContext(), MessagesActivity.class);
-//      i.putExtra("account", account);
-//      startActivity(i);
-//      getActivity().finish();
-//
-//    }, 2500);
-//        });
-//      }
+        });
   }
   @Override
   public void onAttach(Context context) {

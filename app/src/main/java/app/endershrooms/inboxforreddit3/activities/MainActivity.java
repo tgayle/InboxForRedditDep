@@ -1,16 +1,19 @@
 package app.endershrooms.inboxforreddit3.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.Singleton;
+import app.endershrooms.inboxforreddit3.account.Authentication;
+import app.endershrooms.inboxforreddit3.account.Token.AccessToken;
+import app.endershrooms.inboxforreddit3.account.Token.RefreshToken;
 import app.endershrooms.inboxforreddit3.adapters.WelcomeActivityViewPagerAdapter;
 import app.endershrooms.inboxforreddit3.fragments.LoginFragment.OnLoginCompleted;
 import app.endershrooms.inboxforreddit3.interfaces.StartLogin;
 import app.endershrooms.inboxforreddit3.models.RedditAccount;
-import app.endershrooms.inboxforreddit3.net.Authentication;
-import app.endershrooms.inboxforreddit3.net.JSONLoginResponse;
 import app.endershrooms.inboxforreddit3.views.NoSwipeViewPager;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -39,16 +42,18 @@ public class MainActivity extends AppCompatActivity implements OnLoginCompleted,
 
     Singleton.get().prepareDatabase(MainActivity.this);
 
-//    Singleton.get().getDb().accounts().getAllAccounts().subscribeOn(Schedulers.io())
-//        .observeOn(AndroidSchedulers.mainThread())
-//        .subscribe(accounts -> {
-//          if (accounts.size() > 0) {
-//            Intent i = new Intent(MainActivity.this, MessagesActivity.class);
-//            i.putExtra("account", accounts.get(0));
-//            startActivity(i);
-//            finish();
-//          }
-//        });
+    Singleton.get().getDb().accounts().getAllAccounts()
+        .subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(accounts -> {
+          if (accounts.size() > 0) {
+            Intent i = new Intent(MainActivity.this, MessagesActivity.class);
+            i.putExtra("account", accounts.get(0));
+            Log.v("MainActivity", "Going into Messages with " + accounts.get(0).getUsername() + " from db.");
+            startActivity(i);
+            finish();
+          }
+        });
 
   }
 
@@ -56,44 +61,8 @@ public class MainActivity extends AppCompatActivity implements OnLoginCompleted,
   @Override
   public void startLoginProgress(String code) {
     viewPager.setCurrentItem(2);
-//    Login login = new Login(code, MainActivity.this, new Observer<String>() {
-//      @Override
-//      public void onSubscribe(Disposable d) {
-//
-//      }
-//
-//      @Override
-//      public void onNext(String s) {
-//        fragmentLoginListener.updateLoadingText(s);
-//      }
-//
-//      @Override
-//      public void onError(Throwable e) {
-//
-//      }
-//
-//      @Override
-//      public void onComplete() {
-//
-//      }
-//    }, new SingleObserver<RedditAccount>() {
-//      @Override
-//      public void onSubscribe(Disposable d) {
-//
-//      }
-//
-//      @Override
-//      public void onSuccess(RedditAccount account) {
-//        fragmentLoginListener.onCompleteLogin(account);
-//      }
-//
-//      @Override
-//      public void onError(Throwable e) {
-//
-//      }
-//    });
 
-    Singleton.get().getRedditApiNonOauth().getAccessTokenFromCode(Authentication.authorizationHeader, new Authentication.Params(code))
+    Singleton.get().getRedditApiOauth().getAccessTokenFromCode(Authentication.authorizationHeader, new Authentication.Params.NewTokenParams(code))
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(jsonLoginResponse -> {
@@ -101,8 +70,7 @@ public class MainActivity extends AppCompatActivity implements OnLoginCompleted,
               .subscribeOn(Schedulers.io())
               .observeOn(AndroidSchedulers.mainThread())
               .subscribe(jsonMeResponse -> {
-                fragmentLoginListener.onCompleteLogin(new RedditAccount(jsonMeResponse.name, jsonLoginResponse.access_token, jsonLoginResponse.refresh_token,
-                    JSONLoginResponse.expiresInDate(jsonLoginResponse.expires_in)));
+                fragmentLoginListener.onCompleteLogin(new RedditAccount(jsonMeResponse.name, new AccessToken(jsonLoginResponse.access_token, jsonLoginResponse.expires_in), new RefreshToken(jsonLoginResponse.refresh_token)));
               });
         });
 

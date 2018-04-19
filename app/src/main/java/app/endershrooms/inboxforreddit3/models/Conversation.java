@@ -50,6 +50,7 @@ public class Conversation {
 
     for (Message message : messages) {
       String parentName = message.getParentMessageName();
+      Log.d(parentName, "" + message.getTimestamp());
       if (parentNameList.contains(parentName)) {
         int conversationIndex = parentNameList.indexOf(parentName);
         Conversation oldConversation = conversations.get(conversationIndex);
