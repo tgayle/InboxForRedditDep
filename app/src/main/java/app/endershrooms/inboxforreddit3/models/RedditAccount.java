@@ -23,12 +23,6 @@ public class RedditAccount implements Serializable {
   @Embedded(prefix = "refresh_token_")
   private RefreshToken refreshToken;
 
-//  public RedditAccount(String username, String accessToken, String refreshToken, long tokenExpirationDate) {
-//    this.username = username;
-//    this.accessToken = new AccessToken(accessToken, tokenExpirationDate);
-//    this.refreshToken = new RefreshToken(refreshToken);
-//  }
-//
   public RedditAccount(String username, AccessToken accessToken, RefreshToken refreshToken) {
     this.username = username;
     this.accessToken = accessToken;

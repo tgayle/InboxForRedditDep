@@ -16,6 +16,7 @@ import app.endershrooms.inboxforreddit3.interfaces.StartLogin;
 import app.endershrooms.inboxforreddit3.models.RedditAccount;
 import app.endershrooms.inboxforreddit3.views.NoSwipeViewPager;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity implements OnLoginCompleted,
   WelcomeActivityViewPagerAdapter vpAdapter;
   private List<LoginUpdateListener> mListeners = new ArrayList<>();
   LoginUpdateListener fragmentLoginListener;
+  Disposable checkNumUsers;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -42,16 +44,17 @@ public class MainActivity extends AppCompatActivity implements OnLoginCompleted,
 
     Singleton.get().prepareDatabase(MainActivity.this);
 
-    Singleton.get().getDb().accounts().getAllAccounts()
+    checkNumUsers = Singleton.get().getDb().accounts().getAllAccounts()
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(accounts -> {
           if (accounts.size() > 0) {
             Intent i = new Intent(MainActivity.this, MessagesActivity.class);
             i.putExtra("account", accounts.get(0));
-            Log.v("MainActivity", "Going into Messages with " + accounts.get(0).getUsername() + " from db.");
+            Log.v("MainActivity",
+                "Going into Messages with " + accounts.get(0).getUsername() + " from db.");
             startActivity(i);
-            finish();
+            this.finish();
           }
         });
 
@@ -61,7 +64,6 @@ public class MainActivity extends AppCompatActivity implements OnLoginCompleted,
   @Override
   public void startLoginProgress(String code) {
     viewPager.setCurrentItem(2);
-
     Singleton.get().getRedditApiOauth().getAccessTokenFromCode(Authentication.authorizationHeader, new Authentication.Params.NewTokenParams(code))
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
@@ -112,5 +114,10 @@ public class MainActivity extends AppCompatActivity implements OnLoginCompleted,
     void onCompleteLogin(RedditAccount account);
   }
 
-
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
+    checkNumUsers.dispose(); //Make sure to dispose when done here.
+    System.out.println("Checking users is disposed.");
+  }
 }

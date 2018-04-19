@@ -47,7 +47,7 @@ public class MessagesActivity extends AppCompatActivity {
 
     setContentView(R.layout.activity_messages_with_drawer);
     getSupportActionBar().hide();
-
+    System.out.println("MessagesActivity started");
     currentUser = (RedditAccount) getIntent().getSerializableExtra("account");
 
     TextView userTv = (TextView) findViewById(R.id.username_tv);
@@ -89,45 +89,21 @@ public class MessagesActivity extends AppCompatActivity {
 //      });
     });
 
-//    Singleton.get().getRedditApiOauth().getMessages(currentUser.getAuthentication(), "inbox", 0, 10, "")
-//        .subscribeOn(Schedulers.io())
-//        .observeOn(Schedulers.computation())
-//        .map(messagesJSONResponse -> messagesJSONResponse.otherConvertJsonToMessages(currentUser))
-//        .observeOn(AndroidSchedulers.mainThread())
-//        .subscribe(messages -> {
-//          //TODO: Load conversation
-//          messageRv.setAdapter(new MessagesRecyclerViewAdapter(messages));
-//        });
+    APIManager.get().updateUserToken(currentUser, () -> {
+      System.out.println("update token begin from main activity.");
+      APIManager.get().downloadAllPastMessages(currentUser, "inbox", 20, "", (after, messagesLoaded) -> {
+        if (after == null || after.equals("null")) {
+          System.out.println("Download ended from Activity: after = " + after + " and messagesLoaded was " + messagesLoaded);
+          Singleton.get().getDb().messages().getAllUserMessagesAsc(currentUser.getUsername())
+              .subscribeOn(Schedulers.io())
+              .observeOn(AndroidSchedulers.mainThread())
+              .subscribe(messages -> {
+                System.out.println("From Activity: messages size is " + messages.size());
+                messageRv.setAdapter(new MessagesRecyclerViewAdapter(messages));
+              });
+        }
 
-//    APIManager.get().downloadMessages(currentUser, "inbox", 0, 10, "", (after, messagesLoaded) -> {
-//      System.out.println("MessageActivity says after is " + after + " and num loaded this time is " + messagesLoaded);
-//      Singleton.get().getDb().messages().getAllUserMessagesDesc(currentUser.getUsername())
-//          .subscribeOn(Schedulers.io())
-//          .observeOn(AndroidSchedulers.mainThread())
-//          .subscribe(messages -> {
-//            messageRv.setAdapter(new MessagesRecyclerViewAdapter(messages));
-//          });
-//    });
-//
-//    APIManager.get().downloadMessagesStaggered(currentUser, "inbox", 0, 10, "", 30, (after, messagesLoaded) -> {
-//      System.out.println("Download ended from Activity: after = " + after + " and messagesLoaded was " + messagesLoaded);
-//      Singleton.get().getDb().messages().getAllUserMessagesDesc(currentUser.getUsername())
-//          .subscribeOn(Schedulers.io())
-//          .observeOn(AndroidSchedulers.mainThread())
-//          .subscribe(messages -> {
-//            messageRv.setAdapter(new MessagesRecyclerViewAdapter(messages));
-//          });
-//    });
-
-    APIManager.get().downloadAllPastMessages(currentUser, "inbox", 0, 20, "", (after, messagesLoaded) -> {
-      System.out.println("Download ended from Activity: after = " + after + " and messagesLoaded was " + messagesLoaded);
-      Singleton.get().getDb().messages().getAllUserMessagesAsc(currentUser.getUsername())
-          .subscribeOn(Schedulers.io())
-          .observeOn(AndroidSchedulers.mainThread())
-          .subscribe(messages -> {
-            System.out.println("From Activity: messages size is " + messages.size());
-            messageRv.setAdapter(new MessagesRecyclerViewAdapter(messages));
-          });
+      });
     });
 
     RxView.clicks(drawerExpandAccountsBtn)
@@ -175,7 +151,7 @@ public class MessagesActivity extends AppCompatActivity {
 
   List<Message> getMessages(RedditAccount acc, String where) {
     List<Message> messages = new ArrayList<>();
-    Singleton.get().getRedditApiOauth().getMessages(acc.getAuthentication(), where, 0, 30, "")
+    Singleton.get().getRedditApiOauth().getMessages(acc.getAuthentication(), where, 30, "")
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(messagesJSONResponse -> {
           //look to putting on computation thread

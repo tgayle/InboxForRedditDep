@@ -19,11 +19,11 @@ import retrofit2.http.Query;
 
 public interface RedditApi {
 
+  //Removed count param since it's not necessary
   @GET("message/{where}")
   Observable<MessagesJSONResponse> getMessages(
       @Header("Authorization") String token,
       @Path("where") String where,
-      @Query("count") int count,
       @Query("limit") int limit,
       @Query("after") String after);
 

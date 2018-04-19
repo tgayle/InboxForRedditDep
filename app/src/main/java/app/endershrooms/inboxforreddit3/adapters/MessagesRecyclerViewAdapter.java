@@ -47,12 +47,8 @@ public class MessagesRecyclerViewAdapter extends
     vh.dateTv.setText(MiscFuncs.getRelativeDateTime(message.getTimestamp()));
 
     vh.messageTv.setText(trim(Html.fromHtml(noTrailingwhiteLines(trimmedMsg)))); //Not trimming a second time adds weird whitespace?
-    vh.parentCardView.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        debugLog(message.getMessageName(), noTrailingwhiteLines(message.getMessageBody()));
-      }
-    });
+    vh.parentCardView.setOnClickListener(
+        v -> debugLog(message.getMessageName(), noTrailingwhiteLines(message.getMessageBody())));
 
   }
 
