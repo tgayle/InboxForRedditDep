@@ -87,7 +87,6 @@ public class MessagesConversationRecyclerViewAdapter extends
   public void addConversations(List<Conversation> convos) {
     int initSize = this.conversations.size();
     Log.v("ConvoAdapter", "pre "+ this.conversations.size());
-
     this.conversations.addAll(convos);
     Log.v("ConvoAdapter", "post "+ this.conversations.size());
 
@@ -98,6 +97,30 @@ public class MessagesConversationRecyclerViewAdapter extends
   public void animateRemoval() {
 //    TODO: Proper animation.
     conversations.clear();
+    notifyDataSetChanged();
+  }
+
+  public void clearAndReplaceConversations(List<Conversation> conversations) {
+    animateRemoval();
+    addConversations(conversations);
+  }
+
+  public void updateConversations(List<Conversation> newConversations) {
+
+    for (int i = 0; i < conversations.size(); i++) {
+      for (int x = 0; x < newConversations.size(); x++) {
+         Conversation currentConvo = conversations.get(i);
+         Conversation newConvo = newConversations.get(x);
+        if (currentConvo.getParentName().equals(newConvo.getParentName())
+            && currentConvo.getMessages().size() < newConvo.getMessages().size()) {
+            conversations.set(i, newConvo);
+            notifyItemChanged(i);
+          System.out.println("Updated conversation with " + newConvo.getMessages().get(newConvo.getMessages().size() -1).getMessageBody());
+        } else {
+          System.out.println("Didn't update conversation " + currentConvo.getParentName() + " against "+ newConvo.getParentName());
+        }
+      }
+    }
     notifyDataSetChanged();
   }
 

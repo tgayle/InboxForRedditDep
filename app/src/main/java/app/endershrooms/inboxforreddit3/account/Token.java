@@ -28,26 +28,27 @@ public abstract class Token implements Serializable {
   }
 
   public static class AccessToken extends Token{
-    long expiresIn; //in seconds. unix timestamp
-
-    public AccessToken(String token, long expiresIn) {
+    long expiresWhen; //in milliseconds
+    public AccessToken(String token, long expiresWhen) {
       super(token); //convert to millis.
-      this.expiresIn = expiresIn ;
+      if (expiresWhen < 10_000) {
+        expiresWhen = System.currentTimeMillis() + (expiresWhen * 1000);
+      }
+      this.expiresWhen = expiresWhen;
     }
 
     public boolean isTokenExpired() {
       long currentTime = System.currentTimeMillis();
-      long whenTokenExpires = currentTime + (expiresIn * 1000);
-      boolean isExpire = currentTime > whenTokenExpires;
+      boolean isExpire = currentTime > expiresWhen;
 
       Log.v("Token", "CurrentTime is " + currentTime +
-          ". Expire time is " + whenTokenExpires + ". Comparison is " +
-          currentTime + " > " + whenTokenExpires + " == " + isExpire);
+          ". Expire time is " + expiresWhen + ". Comparison is " +
+          currentTime + " > " + expiresWhen + " == " + isExpire);
       return isExpire;
     }
 
-    public long getExpiresIn() {
-      return expiresIn;
+    public long getExpiresWhen() {
+      return expiresWhen;
     }
   }
 

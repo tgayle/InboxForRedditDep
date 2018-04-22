@@ -18,8 +18,10 @@ public class RedditAccount implements Serializable {
 
   @PrimaryKey @NonNull
   private String username;
+
   @Embedded(prefix = "access_token_")
   private AccessToken accessToken;
+
   @Embedded(prefix = "refresh_token_")
   private RefreshToken refreshToken;
 
@@ -73,6 +75,6 @@ public class RedditAccount implements Serializable {
         + "RToken: %s %n"
         + "Expires: %d %n";
 
-    return String.format(formatted, username, accessToken, refreshToken, accessToken.getExpiresIn());
+    return String.format(formatted, username, accessToken, refreshToken, accessToken.getExpiresWhen());
   }
 }

@@ -21,11 +21,18 @@ public interface RedditApi {
 
   //Removed count param since it's not necessary
   @GET("message/{where}")
-  Observable<MessagesJSONResponse> getMessages(
+  Observable<MessagesJSONResponse> getMessagesWithAfter(
       @Header("Authorization") String token,
       @Path("where") String where,
       @Query("limit") int limit,
       @Query("after") String after);
+
+  @GET("message/{where}")
+  Observable<MessagesJSONResponse> getMessagesWithBefore(
+      @Header("Authorization") String token,
+      @Path("where") String where,
+      @Query("limit") int limit,
+      @Query("before") String before);
 
   @GET("api/v1/me")
   Observable<JsonMeResponse> getMe(@Header("Authorization") String token);

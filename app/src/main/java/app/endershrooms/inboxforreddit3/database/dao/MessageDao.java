@@ -8,6 +8,7 @@ import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 import app.endershrooms.inboxforreddit3.models.Message;
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 import java.util.List;
 
 /**
@@ -36,14 +37,23 @@ public interface MessageDao {
   public int deleteMessages(List<Message> messages);
 
   @Query("SELECT * FROM messages WHERE messageOwner LIKE :account ORDER BY timestamp ASC")
-  public Flowable<List<Message>> getAllUserMessagesAsc(String account); //Oldest First
+  public Single<List<Message>> getAllUserMessagesAsc(String account); //Oldest First
 
   @Query("SELECT * FROM messages WHERE messageOwner LIKE :account ORDER BY timestamp DESC")
-  public Flowable<List<Message>> getAllUserMessagesDesc(String account); //Newest First
+  public Single<List<Message>> getAllUserMessagesDesc(String account); //Newest First
 
   @Query("SELECT * FROM messages")
   public Flowable<List<Message>> getAllMessagesFromAllAccounts();
 
+  @Query("SELECT DISTINCT parentMessageName FROM messages WHERE messageOwner LIKE :account ORDER BY timestamp ASC")
+  public Single<List<String>> getAllParentConversationNamesForAccount(String account);
+
   @Query("SELECT * FROM messages WHERE messageOwner LIKE :account AND parentMessageName LIKE :parentname ORDER BY timestamp ASC")
   public Flowable<List<Message>> getAllMessagesFromConversation(String account, String parentname);
+
+  @Query("SELECT * FROM messages ORDER BY messageName DESC LIMIT 1")
+  public Single<Message> getNewestMessageInDatabase();
+
+  @Query("SELECT * FROM messages WHERE messageOwner LIKE :account LIMIT 1")
+  public Single<List<Message>> getFirstMessage(String account);
 }
