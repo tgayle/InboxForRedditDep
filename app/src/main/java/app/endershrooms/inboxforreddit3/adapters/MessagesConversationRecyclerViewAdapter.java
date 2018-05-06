@@ -89,7 +89,6 @@ public class MessagesConversationRecyclerViewAdapter extends
     Log.v("ConvoAdapter", "pre "+ this.conversations.size());
     this.conversations.addAll(convos);
     Log.v("ConvoAdapter", "post "+ this.conversations.size());
-
 //    notifyDataSetChanged();
     notifyItemRangeInserted(initSize, conversations.size());
   }
@@ -101,8 +100,11 @@ public class MessagesConversationRecyclerViewAdapter extends
   }
 
   public void clearAndReplaceConversations(List<Conversation> conversations) {
-    animateRemoval();
-    addConversations(conversations);
+//    animateRemoval();
+////    conversations.clear();
+    this.conversations.clear();
+    this.conversations.addAll(conversations);
+    notifyDataSetChanged();
   }
 
   public void updateConversations(List<Conversation> newConversations) {
@@ -115,9 +117,6 @@ public class MessagesConversationRecyclerViewAdapter extends
             && currentConvo.getMessages().size() < newConvo.getMessages().size()) {
             conversations.set(i, newConvo);
             notifyItemChanged(i);
-          System.out.println("Updated conversation with " + newConvo.getMessages().get(newConvo.getMessages().size() -1).getMessageBody());
-        } else {
-          System.out.println("Didn't update conversation " + currentConvo.getParentName() + " against "+ newConvo.getParentName());
         }
       }
     }

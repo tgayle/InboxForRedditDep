@@ -3,10 +3,12 @@ package app.endershrooms.inboxforreddit3.models;
 import android.annotation.SuppressLint;
 import android.arch.persistence.room.Embedded;
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 import app.endershrooms.inboxforreddit3.account.Token.AccessToken;
 import app.endershrooms.inboxforreddit3.account.Token.RefreshToken;
+import app.endershrooms.inboxforreddit3.net.model.JSONLoginResponse;
 import java.io.Serializable;
 
 /**
@@ -25,17 +27,37 @@ public class RedditAccount implements Serializable {
   @Embedded(prefix = "refresh_token_")
   private RefreshToken refreshToken;
 
-  public RedditAccount(String username, AccessToken accessToken, RefreshToken refreshToken) {
+  private boolean accountIsNew;
+
+  public RedditAccount(@NonNull String username, AccessToken accessToken, RefreshToken refreshToken, boolean accountIsNew) {
     this.username = username;
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
+    this.accountIsNew = accountIsNew;
   }
 
+  @Ignore
+  public RedditAccount(@NonNull String username, AccessToken accessToken, RefreshToken refreshToken) {
+    this.username = username;
+    this.accessToken = accessToken;
+    this.refreshToken = refreshToken;
+    this.accountIsNew = false;
+  }
+
+  @Ignore
+  public RedditAccount(@NonNull String username, JSONLoginResponse jsonLoginResponse) {
+    this.username = username;
+    this.accessToken = new AccessToken(jsonLoginResponse.access_token, jsonLoginResponse.expires_in);
+    this.refreshToken = new RefreshToken(jsonLoginResponse.refresh_token);
+    this.accountIsNew = true;
+  }
+
+  @NonNull
   public String getUsername() {
     return username;
   }
 
-  public void setUsername(String username) {
+  public void setUsername(@NonNull String username) {
     this.username = username;
   }
 
@@ -57,6 +79,14 @@ public class RedditAccount implements Serializable {
 
   public String getAuthentication() {
     return "  bearer " + accessToken;
+  }
+
+  public boolean getAccountIsNew() {
+    return accountIsNew;
+  }
+
+  public void setAccountIsNew(boolean accountIsNew) {
+    this.accountIsNew = accountIsNew;
   }
 
   public static String getAuthentication(String accessToken) {

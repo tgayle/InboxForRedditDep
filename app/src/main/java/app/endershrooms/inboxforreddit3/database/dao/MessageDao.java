@@ -51,8 +51,8 @@ public interface MessageDao {
   @Query("SELECT * FROM messages WHERE messageOwner LIKE :account AND parentMessageName LIKE :parentname ORDER BY timestamp ASC")
   public Flowable<List<Message>> getAllMessagesFromConversation(String account, String parentname);
 
-  @Query("SELECT * FROM messages ORDER BY messageName DESC LIMIT 1")
-  public Single<Message> getNewestMessageInDatabase();
+  @Query("SELECT * FROM messages WHERE messageOwner LIKE :account ORDER BY messageName DESC LIMIT 1")
+  public Single<Message> getNewestMessageInDatabase(String account);
 
   @Query("SELECT * FROM messages WHERE messageOwner LIKE :account LIMIT 1")
   public Single<List<Message>> getFirstMessage(String account);

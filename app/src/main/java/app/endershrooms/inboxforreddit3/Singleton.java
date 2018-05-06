@@ -29,7 +29,7 @@ public class Singleton {
   private AppDatabase db;
   private OkHttpClient client;
   private Retrofit retrofitOauth;
-  private RedditApi redditApiOauth;
+  private RedditApi redditApi;
   private RxJava2CallAdapterFactory rxCallAdapter = RxJava2CallAdapterFactory.createWithScheduler(
       Schedulers.io());
 
@@ -89,11 +89,13 @@ public class Singleton {
     return retrofitOauth;
   }
 
-  public RedditApi getRedditApiOauth() {
-    if (redditApiOauth == null) {
-      redditApiOauth = getRetrofitOauth().create(RedditApi.class);
+  public RedditApi getRedditApi() {
+    if (redditApi == null) {
+      redditApi = getRetrofitOauth().create(RedditApi.class);
     }
-    return redditApiOauth;
+    return redditApi;
   }
+
+
 
 }

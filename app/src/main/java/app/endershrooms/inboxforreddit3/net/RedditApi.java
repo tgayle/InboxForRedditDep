@@ -19,7 +19,6 @@ import retrofit2.http.Query;
 
 public interface RedditApi {
 
-  //Removed count param since it's not necessary
   @GET("message/{where}")
   Observable<MessagesJSONResponse> getMessagesWithAfter(
       @Header("Authorization") String token,

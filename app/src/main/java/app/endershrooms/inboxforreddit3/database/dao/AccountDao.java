@@ -8,6 +8,7 @@ import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 import app.endershrooms.inboxforreddit3.models.RedditAccount;
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 import java.util.List;
 
 /**
@@ -17,7 +18,7 @@ import java.util.List;
 @Dao
 public interface AccountDao {
   @Insert(onConflict = OnConflictStrategy.REPLACE)
-  public void addAccount(RedditAccount account);
+  public Long addAccount(RedditAccount account);
 
   @Update
   public int updateAccount(RedditAccount account);
@@ -28,6 +29,9 @@ public interface AccountDao {
   @Query("SELECT * FROM accounts")
   public Flowable<List<RedditAccount>> getAllAccounts();
 
+  @Query("SELECT * FROM accounts")
+  public Flowable<RedditAccount> getAccountsFlowable();
+
   @Query("SELECT * FROM accounts WHERE username LIKE :name")
-  public Flowable<List<RedditAccount>> getAccountFromName(String name);
+  public Single<RedditAccount> getAccountFromName(String name);
 }

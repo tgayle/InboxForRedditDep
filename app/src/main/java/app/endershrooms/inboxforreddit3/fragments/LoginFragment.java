@@ -29,8 +29,6 @@ public class LoginFragment extends Fragment {
 
   public static final String CLIENT_ID = "***REMOVED***";
   public static final String OAUTH_REDIRECT_URI = "http://www.google.com";
-  public static final String BASE_REDDIT_OAUTH = "https://oauth.reddit.com";
-
 
   public static final String OAUTH_SCOPE = "identity,edit,flair,history," +
       "modconfig,modflair,modlog," +
@@ -142,8 +140,6 @@ public class LoginFragment extends Fragment {
           }
 
           loginListener.startLoginProgress(redirect_code);
-
-
         }
       }
 

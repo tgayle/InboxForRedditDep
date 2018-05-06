@@ -1,7 +1,5 @@
 package app.endershrooms.inboxforreddit3.models;
 
-import android.util.Log;
-import app.endershrooms.inboxforreddit3.MiscFuncs;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -84,7 +82,7 @@ public class Conversation {
         conversations.get(parent).addMessage(message);
       } else {
         conversations.put(parent, new Conversation(parent, message));
-        Log.d("formConversation", "Added " + parent + " " + MiscFuncs.getRelativeDateTime(message.getTimestamp()));
+//        Log.d("formConversation", "Added " + parent + " " + MiscFuncs.getRelativeDateTime(message.getTimestamp()));
       }
     }
     for (Conversation conversation : conversations.values()) {

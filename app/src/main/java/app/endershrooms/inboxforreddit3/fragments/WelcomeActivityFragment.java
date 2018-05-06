@@ -13,7 +13,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.Singleton;
-import app.endershrooms.inboxforreddit3.activities.MainActivity;
+import app.endershrooms.inboxforreddit3.activities.EntryLoginActivity;
 import app.endershrooms.inboxforreddit3.activities.MessagesActivity;
 import app.endershrooms.inboxforreddit3.models.RedditAccount;
 import com.jakewharton.rxbinding2.view.RxView;
@@ -24,7 +24,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 
-public class WelcomeActivityFragment extends Fragment implements MainActivity.LoginUpdateListener {
+public class WelcomeActivityFragment extends Fragment implements EntryLoginActivity.LoginUpdateListener {
 
 
   public enum FragmentProgress {
@@ -97,7 +97,7 @@ public class WelcomeActivityFragment extends Fragment implements MainActivity.Lo
 
         RxView.clicks(loginBtn)
             .subscribe(aVoid -> {
-              ((MainActivity) getActivity()).startLogin();
+              ((EntryLoginActivity) getActivity()).startLogin();
             });
 
         Log.v("Fragment", "Started welcome fragment!");
@@ -155,22 +155,18 @@ public class WelcomeActivityFragment extends Fragment implements MainActivity.Lo
           i.putExtra("account", account);
           startActivity(i);
           getActivity().finish();
-//          new Handler().postDelayed(() -> {
-//
-//          }, 2500);
         });
   }
   @Override
   public void onAttach(Context context) {
     super.onAttach(context);
-//    ((MainActivity) getActivity()).registerDataUpdateListener(this);
-    ((MainActivity)getActivity()).setFragmentLoginListener(this);
+    ((EntryLoginActivity)getActivity()).setFragmentLoginListener(this);
   }
 
   @Override
   public void onDestroy() {
     super.onDestroy();
-    ((MainActivity) getActivity()).unregisterDataUpdateListener(this);
+    ((EntryLoginActivity) getActivity()).unregisterDataUpdateListener(this);
   }
 
   @Override
