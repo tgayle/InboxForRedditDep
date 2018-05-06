@@ -28,13 +28,13 @@ public class MessagesRecyclerViewAdapter extends
 
   public MessagesRecyclerViewAdapter(List<Message> messages) {
     this.messages = messages;
+    Log.v("Adapter", "created with size " + messages.size());
   }
 
   @Override
   public Viewholder onCreateViewHolder(ViewGroup parent, int viewType) {
     return new Viewholder(LayoutInflater.from(parent.getContext())
         .inflate(R.layout.card_message_rv_linear, parent, false));
-//        return new Viewholder(LayoutInflater.from(parent.getContext()).inflate(R.layout.card_message_rv, parent, false));
   }
 
   @Override
@@ -57,13 +57,23 @@ public class MessagesRecyclerViewAdapter extends
   }
 
   public void addMessage(Message message) {
-    messages.add(message);
+    this.messages.add(message);
     notifyItemInserted(messages.size());
   }
 
   @Override
   public int getItemCount() {
     return messages.size();
+  }
+
+  public void addMessages(List<Message> messages) {
+    int initSize = this.messages.size();
+    Log.v("Adapter", "pre "+ this.messages.size());
+    this.messages.addAll(messages);
+    Log.v("Adapter", "post "+ this.messages.size());
+
+    notifyDataSetChanged();
+//    notifyItemRangeInserted(initSize, messages.size());
   }
 
   class Viewholder extends ViewHolder {

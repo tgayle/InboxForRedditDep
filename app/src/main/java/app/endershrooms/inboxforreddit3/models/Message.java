@@ -2,6 +2,7 @@ package app.endershrooms.inboxforreddit3.models;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
+import android.support.annotation.NonNull;
 
 /**
  * Created by Travis on 1/22/2018.
@@ -12,7 +13,7 @@ public class Message {
   private String messageOwner; //what account should see this message.
 
   @PrimaryKey
-  @android.support.annotation.NonNull
+  @NonNull
   private String messageName;
 
   private String parentMessageName;
