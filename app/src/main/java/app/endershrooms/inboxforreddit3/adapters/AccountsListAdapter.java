@@ -14,7 +14,7 @@ import android.widget.TextView;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.activities.AddNewAccountActivity;
 import app.endershrooms.inboxforreddit3.adapters.AccountsListAdapter.ViewHolder;
-import app.endershrooms.inboxforreddit3.models.RedditAccount;
+import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import com.jakewharton.rxbinding2.view.RxView;
 
 /**
@@ -24,7 +24,7 @@ import com.jakewharton.rxbinding2.view.RxView;
 public class AccountsListAdapter extends PagedListAdapter<RedditAccount, ViewHolder> {
 
   public AccountsListAdapter() {
-    super(itemDifferenceCalculator);
+    super(ACCOUNT_DIFFERENCE_CALLBACK);
   }
 
   @Override
@@ -47,7 +47,7 @@ public class AccountsListAdapter extends PagedListAdapter<RedditAccount, ViewHol
     }
   }
 
-  private static final DiffUtil.ItemCallback<RedditAccount> itemDifferenceCalculator =
+  private static final DiffUtil.ItemCallback<RedditAccount> ACCOUNT_DIFFERENCE_CALLBACK =
       new ItemCallback<RedditAccount>() {
         @Override
         public boolean areItemsTheSame(RedditAccount oldItem, RedditAccount newItem) {

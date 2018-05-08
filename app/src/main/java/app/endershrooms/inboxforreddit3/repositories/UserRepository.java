@@ -5,7 +5,7 @@ import android.arch.paging.LivePagedListBuilder;
 import android.arch.paging.PagedList;
 import app.endershrooms.inboxforreddit3.Singleton;
 import app.endershrooms.inboxforreddit3.database.dao.AccountDao;
-import app.endershrooms.inboxforreddit3.models.RedditAccount;
+import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import java.util.List;
 
 /**

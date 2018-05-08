@@ -14,7 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import app.endershrooms.inboxforreddit3.MiscFuncs;
 import app.endershrooms.inboxforreddit3.R;
-import app.endershrooms.inboxforreddit3.models.Message;
+import app.endershrooms.inboxforreddit3.models.reddit.Message;
 import java.util.List;
 
 /**

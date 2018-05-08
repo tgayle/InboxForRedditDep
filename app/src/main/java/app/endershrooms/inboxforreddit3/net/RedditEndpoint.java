@@ -17,7 +17,7 @@ import retrofit2.http.Query;
  * Created by Travis on 3/25/2018.
  */
 
-public interface RedditApi {
+public interface RedditEndpoint {
 
   @GET("message/{where}")
   Observable<MessagesJSONResponse> getMessagesWithAfter(

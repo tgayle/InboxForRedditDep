@@ -1,18 +1,13 @@
 package app.endershrooms.inboxforreddit3.activities;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import app.endershrooms.inboxforreddit3.R;
-import app.endershrooms.inboxforreddit3.RxBus;
-import app.endershrooms.inboxforreddit3.RxBus.Subjects;
-import app.endershrooms.inboxforreddit3.Singleton;
-import app.endershrooms.inboxforreddit3.account.Authentication;
 import app.endershrooms.inboxforreddit3.fragments.LoginFragment;
-import app.endershrooms.inboxforreddit3.fragments.LoginFragment.OnLoginCompleted;
-import app.endershrooms.inboxforreddit3.models.RedditAccount;
-import io.reactivex.schedulers.Schedulers;
+import app.endershrooms.inboxforreddit3.viewmodels.AddNewAccountActivityViewModel;
 
-public class AddNewAccountActivity extends AppCompatActivity implements OnLoginCompleted {
+public class AddNewAccountActivity extends AppCompatActivity {
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -23,20 +18,13 @@ public class AddNewAccountActivity extends AppCompatActivity implements OnLoginC
         .beginTransaction()
         .add(R.id.fragment_holder, LoginFragment.newInstance())
         .commit();
+
+    AddNewAccountActivityViewModel viewModel = ViewModelProviders.of(this).get(AddNewAccountActivityViewModel.class);
+    viewModel.getAddedAccount().observe(this, account -> {
+      if (account != null) {
+        finish();
+      }
+    });
   }
 
-  @Override
-  public void startLoginProgress(String code) {
-    Singleton.get().getRedditApi().getAccessTokenFromCode(Authentication.authorizationHeader, new Authentication.Params.NewTokenParams(code))
-        .subscribe(jsonLoginResponse -> {
-          Singleton.get().getRedditApi().getMe(RedditAccount.getAuthentication(jsonLoginResponse.access_token))
-              .subscribeOn(Schedulers.io())
-              .subscribe(jsonMeResponse -> {
-                RedditAccount newAccount = new RedditAccount(jsonMeResponse.name, jsonLoginResponse);
-                Singleton.get().getDb().accounts().addAccount(newAccount);
-                RxBus.publish(Subjects.ON_ACCOUNT_ADDED, newAccount.getUsername());
-                finish();
-              });
-        });
-  }
 }

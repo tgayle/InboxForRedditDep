@@ -8,7 +8,7 @@ import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
-import app.endershrooms.inboxforreddit3.models.RedditAccount;
+import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import io.reactivex.Flowable;
 import java.util.List;
 

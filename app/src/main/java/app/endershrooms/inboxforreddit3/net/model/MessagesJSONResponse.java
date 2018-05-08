@@ -1,8 +1,8 @@
 package app.endershrooms.inboxforreddit3.net.model;
 
 import android.util.Log;
-import app.endershrooms.inboxforreddit3.models.Message;
-import app.endershrooms.inboxforreddit3.models.RedditAccount;
+import app.endershrooms.inboxforreddit3.models.reddit.Message;
+import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import java.util.ArrayList;
 import java.util.List;
 

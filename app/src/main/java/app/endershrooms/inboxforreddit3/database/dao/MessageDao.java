@@ -1,12 +1,13 @@
 package app.endershrooms.inboxforreddit3.database.dao;
 
+import android.arch.paging.DataSource;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
-import app.endershrooms.inboxforreddit3.models.Message;
+import app.endershrooms.inboxforreddit3.models.reddit.Message;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import java.util.List;
@@ -62,5 +63,5 @@ public interface MessageDao {
       + " JOIN (SELECT parentMessageName, MAX(timestamp) timestamp FROM messages GROUP BY parentMessageName) AS t2"
       + " ON t1.parentMessageName = t2.parentMessageName AND t1.timestamp = t2.timestamp AND t1.messageOwner LIKE :account"
       + " ORDER BY timestamp")
-  public Single<List<Message>> getNewestMessageForAllConversationsForUser(String account);
+  public DataSource.Factory<Integer, Message> getNewestMessageForAllConversationsForUser(String account);
 }

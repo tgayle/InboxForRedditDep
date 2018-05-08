@@ -1,14 +1,18 @@
 package app.endershrooms.inboxforreddit3.net;
 
+import static java.lang.annotation.RetentionPolicy.SOURCE;
+
+import android.support.annotation.StringDef;
 import android.util.Log;
 import app.endershrooms.inboxforreddit3.Singleton;
 import app.endershrooms.inboxforreddit3.account.Authentication;
 import app.endershrooms.inboxforreddit3.account.Token.AccessToken;
 import app.endershrooms.inboxforreddit3.interfaces.OnCompleteInterface;
-import app.endershrooms.inboxforreddit3.models.RedditAccount;
+import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import app.endershrooms.inboxforreddit3.net.model.MessagesJSONResponse;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
+import java.lang.annotation.Retention;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -47,20 +51,28 @@ public class APIManager {
         });
   }
 
-  private void downloadMessages(RedditAccount user, String where, int limit, String beforeOrAfter,
-      String beforeAfter, OnCompleteMessageLoad onCompleteInterface, OnRedditApiError errorListener) {
-    Observable<MessagesJSONResponse> messageLoader = beforeOrAfter.equals("before") ?
-        Singleton.get().getRedditApi().getMessagesWithBefore(user.getAuthentication(), where, limit, beforeAfter) :
-        Singleton.get().getRedditApi().getMessagesWithAfter(user.getAuthentication(), where, limit, beforeAfter);
 
-    messageLoader
-        .observeOn(Schedulers.io())
-        .subscribe(messagesJSONResponse -> {
-          Singleton.get().getDb().messages().insertMessages(messagesJSONResponse.otherConvertJsonToMessages(user));
-//          System.out.println("After was " + messagesJSONResponse.data.after);
-          System.out.println("Download messages called with  " +beforeOrAfter + " " + beforeAfter);
-          onCompleteInterface.onComplete(beforeOrAfter, messagesJSONResponse.data.after, messagesJSONResponse.data.children.size());
-        }, errorListener::onError);
+
+  @Retention(SOURCE)
+  @StringDef({"before", "after"})
+  @interface Subject {}
+  private void downloadMessages(RedditAccount user, String where, int limit, @Subject String beforeOrAfter,
+      String beforeAfter, OnCompleteMessageLoad onCompleteInterface, OnRedditApiError errorListener) {
+
+    updateUserToken(user, () -> {
+      Observable<MessagesJSONResponse> messageLoader = beforeOrAfter.equals("before") ?
+          Singleton.get().getRedditApi().getMessagesWithBefore(user.getAuthentication(), where, limit, beforeAfter) :
+          Singleton.get().getRedditApi().getMessagesWithAfter(user.getAuthentication(), where, limit, beforeAfter);
+
+      messageLoader
+          .observeOn(Schedulers.io())
+          .subscribe(messagesJSONResponse -> {
+            Singleton.get().getDb().messages().insertMessages(messagesJSONResponse.otherConvertJsonToMessages(user));
+            System.out.println("Download messages called with  " +beforeOrAfter + " " + beforeAfter);
+            onCompleteInterface.onComplete(beforeOrAfter, messagesJSONResponse.data.after, messagesJSONResponse.data.children.size());
+          }, errorListener::onError);
+    }, errorListener::onError);
+
   }
 
   public void downloadAllPastMessages(RedditAccount user, String where, int limit, String after, OnCompleteMessageLoad onCompleteInterface, OnRedditApiError errorListener) {
@@ -79,9 +91,30 @@ public class APIManager {
     }, errorListener);
   }
 
+  //TODO: Remove listeners and use LiveData to listen to DB?
+  public void downloadUnreadMessages(RedditAccount user, int limit, String after, OnCompleteMessageLoad onCompleteMessageLoad, OnRedditApiError errorListener) {
+    BeforeAfterMessageHolder mostRecentAfter = new BeforeAfterMessageHolder(after);
+    AtomicInteger mostRecentNumLoaded = new AtomicInteger();
+
+    downloadMessages(user, "unread", limit, "after", after, (beforeOrAfter, newAfter, messagesLoaded) -> {
+        downloadUnreadMessages(user, limit, newAfter, onCompleteMessageLoad, errorListener);
+        System.out.println("Downloading all unread messages recursed. Count is " + (messagesLoaded) + " and newest after loaded is " + newAfter);
+        mostRecentAfter.setCurrent(newAfter);
+        mostRecentNumLoaded.set(messagesLoaded);
+      }, errorListener);
+  }
+
+  public void downloadAllFutureMessagesAllLocations(RedditAccount user, int limit, String beforeAfter, OnCompleteMessageLoad onCompleteMessageLoad, OnRedditApiError errorListener) {
+    downloadAllFutureMessages(user, "inbox", limit, beforeAfter, onCompleteMessageLoad, errorListener);
+    downloadAllFutureMessages(user, "sent", limit, beforeAfter, onCompleteMessageLoad, errorListener);
+    downloadUnreadMessages(user, limit, null, onCompleteMessageLoad, errorListener);
+  }
+
   public void downloadAllFutureMessages(RedditAccount user, String where, int limit, String before, OnCompleteMessageLoad onCompleteMessageLoad, OnRedditApiError errorListener) {
     BeforeAfterMessageHolder mostRecentBefore = new BeforeAfterMessageHolder(before);
     AtomicInteger mostRecentNumLoaded = new AtomicInteger();
+
+    downloadUnreadMessages(user, limit, "", onCompleteMessageLoad, errorListener);
 
     downloadMessages(user, where, limit, "before", before, (beforeOrAfter, newBefore, messagesLoaded) -> {
       if (before != null) {
@@ -104,7 +137,6 @@ public class APIManager {
 
     BeforeAfterMessageHolder(String currentAfter) {
       this.current = currentAfter;
-      Log.v("BeforeAfterMessageHold", "Created with " + currentAfter);
     }
 
     void setCurrent(String currentAfter) {

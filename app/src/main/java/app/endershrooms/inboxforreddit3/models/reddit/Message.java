@@ -1,9 +1,8 @@
-package app.endershrooms.inboxforreddit3.models;
+package app.endershrooms.inboxforreddit3.models.reddit;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
-import app.endershrooms.inboxforreddit3.MiscFuncs;
 
 /**
  * Created by Travis on 1/22/2018.
@@ -23,7 +22,7 @@ public class Message {
   private long timestamp;
   private boolean isNew;
 
-  public Message(String messageOwner, String messageName, String parentMessageName,
+  public Message(String messageOwner, @NonNull String messageName, String parentMessageName,
       String author, String destination, String subject, String messageBody,
       long timestamp, boolean isNew) {
     this.messageOwner = messageOwner;
@@ -37,7 +36,7 @@ public class Message {
     this.isNew = isNew;
   }
 
-  public Message(RedditAccount messageOwner, String messageName, String parentMessageName,
+  public Message(RedditAccount messageOwner, @NonNull String messageName, String parentMessageName,
       String author, String destination, String subject, String messageBody,
       long timestamp, boolean isNew) {
     this.messageOwner = messageOwner.getUsername();
@@ -51,6 +50,7 @@ public class Message {
     this.isNew = isNew;
   }
 
+  @NonNull
   public String getMessageName() {
     return messageName;
   }
@@ -103,7 +103,7 @@ public class Message {
     this.timestamp = timestamp;
   }
 
-  public void setMessageName(String messageName) {
+  public void setMessageName(@NonNull String messageName) {
     this.messageName = messageName;
   }
 
@@ -124,34 +124,17 @@ public class Message {
   }
 
   @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("[");
-    sb.append("messageOwner = ");
-    sb.append(messageOwner);
-    sb.append("\n");
-    sb.append("messageName = ");
-    sb.append(messageName);
-    sb.append("\n");
-    sb.append("parent name = ");
-    sb.append(parentMessageName);
-    sb.append("\n");
-    sb.append("author = ");
-    sb.append(author);
-    sb.append("\n");
-    sb.append("destination = ");
-    sb.append(destination);
-    sb.append("\n");
-    sb.append("subject = ");
-    sb.append(subject);
-    sb.append("\n");
-    sb.append("body = ");
-    sb.append(messageBody);
-    sb.append("\n");
-    sb.append("timestamp = ");
-    sb.append(timestamp);
-    sb.append(" " + MiscFuncs.getRelativeDateTime(timestamp));
-    sb.append("\n");
-    return sb.toString();
+  public boolean equals(Object obj) {
+    if (obj instanceof Message) {
+      Message otherMsg = (Message) obj;
+      return this.getMessageName().equals(otherMsg.getMessageName())          &&
+          this.getAuthor().equals(otherMsg.getAuthor())                       &&
+          this.getDestination().equals(otherMsg.getDestination())             &&
+          this.getParentMessageName().equals(otherMsg.getParentMessageName()) &&
+          this.isNew == otherMsg.isNew                                        &&
+          this.getTimestamp().equals(otherMsg.getTimestamp())                 &&
+          this.getMessageOwner().equals(otherMsg.getMessageOwner());
+    }
+    return false;
   }
 }

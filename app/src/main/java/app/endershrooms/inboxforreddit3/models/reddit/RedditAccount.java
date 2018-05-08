@@ -1,4 +1,4 @@
-package app.endershrooms.inboxforreddit3.models;
+package app.endershrooms.inboxforreddit3.models.reddit;
 
 import android.annotation.SuppressLint;
 import android.arch.persistence.room.Embedded;

@@ -1,4 +1,4 @@
-package app.endershrooms.inboxforreddit3.models;
+package app.endershrooms.inboxforreddit3.models.reddit;
 
 import java.util.ArrayList;
 import java.util.Collections;

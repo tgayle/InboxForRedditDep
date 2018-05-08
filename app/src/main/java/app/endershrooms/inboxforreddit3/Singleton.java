@@ -4,7 +4,7 @@ import android.arch.persistence.room.Room;
 import android.content.Context;
 import android.util.Log;
 import app.endershrooms.inboxforreddit3.database.AppDatabase;
-import app.endershrooms.inboxforreddit3.net.RedditApi;
+import app.endershrooms.inboxforreddit3.net.RedditEndpoint;
 import io.reactivex.schedulers.Schedulers;
 import java.io.IOException;
 import java.util.List;
@@ -29,7 +29,7 @@ public class Singleton {
   private AppDatabase db;
   private OkHttpClient client;
   private Retrofit retrofit;
-  private RedditApi redditApi;
+  private RedditEndpoint redditApi;
   private RxJava2CallAdapterFactory rxCallAdapter = RxJava2CallAdapterFactory.createWithScheduler(
       Schedulers.io());
 
@@ -90,9 +90,9 @@ public class Singleton {
     return retrofit;
   }
 
-  public RedditApi getRedditApi() {
+  public RedditEndpoint getRedditApi() {
     if (redditApi == null) {
-      redditApi = getRetrofit().create(RedditApi.class);
+      redditApi = getRetrofit().create(RedditEndpoint.class);
     }
     return redditApi;
   }
