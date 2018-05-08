@@ -48,7 +48,7 @@ public class EntryLoginActivity extends AppCompatActivity implements OnLoginComp
         .subscribe(accounts -> {
           if (accounts.size() > 0) {
             Intent i = new Intent(EntryLoginActivity.this, MessagesActivity.class);
-            i.putExtra("account", accounts.get(0));
+            i.putExtra("account", accounts.get(0).getUsername()); //TODO: get current user from shared prefs
             Log.v("EntryLoginActivity",
                 "Going into Messages with " + accounts.get(0).getUsername() + " from db.");
             startActivity(i);

@@ -112,4 +112,15 @@ public class RedditAccount implements Serializable {
 
     return String.format(formatted, username, accessToken, refreshToken, accessToken.getExpiresWhen());
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof RedditAccount) {
+      RedditAccount otherAcc = (RedditAccount) obj;
+      return this.getUsername().equals(otherAcc.getUsername()) &&
+          this.getAccessToken().equals(otherAcc.getAccessToken()) &&
+          this.getRefreshToken().equals(otherAcc.getRefreshToken());
+    }
+    return false;
+  }
 }

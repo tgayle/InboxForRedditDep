@@ -14,10 +14,6 @@ public abstract class Token implements Serializable {
     return token;
   }
 
-  protected void setToken(String token) {
-    this.token = token;
-  }
-
   Token(String token) {
     this.token = token;
   }
@@ -27,7 +23,7 @@ public abstract class Token implements Serializable {
     return token;
   }
 
-  public static class AccessToken extends Token{
+  public static class AccessToken extends Token {
     long expiresWhen; //in milliseconds
     public AccessToken(String token, long expiresWhen) {
       super(token); //convert to millis.
@@ -50,13 +46,26 @@ public abstract class Token implements Serializable {
     public long getExpiresWhen() {
       return expiresWhen;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+      return obj instanceof AccessToken &&
+          ((AccessToken) obj).expiresWhen == this.expiresWhen &&
+          ((AccessToken) obj).getToken().equals(this.getToken());
+    }
   }
 
   public static class RefreshToken extends Token {
     public RefreshToken(String token) {
       super(token);
     }
-}
+
+    @Override
+    public boolean equals(Object obj) {
+      return obj instanceof RefreshToken &&
+          ((RefreshToken) obj).getToken().equals(this.getToken());
+    }
+  }
 
 
 }

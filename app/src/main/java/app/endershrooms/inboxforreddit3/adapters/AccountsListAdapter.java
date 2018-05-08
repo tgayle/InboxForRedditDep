@@ -1,6 +1,9 @@
 package app.endershrooms.inboxforreddit3.adapters;
 
+import android.arch.paging.PagedListAdapter;
 import android.content.Intent;
+import android.support.v7.util.DiffUtil;
+import android.support.v7.util.DiffUtil.ItemCallback;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,66 +16,54 @@ import app.endershrooms.inboxforreddit3.activities.AddNewAccountActivity;
 import app.endershrooms.inboxforreddit3.adapters.AccountsListAdapter.ViewHolder;
 import app.endershrooms.inboxforreddit3.models.RedditAccount;
 import com.jakewharton.rxbinding2.view.RxView;
-import java.util.List;
 
 /**
  * Created by Travis on 3/22/2018.
  */
 
-public class AccountsListAdapter extends RecyclerView.Adapter<ViewHolder> {
+public class AccountsListAdapter extends PagedListAdapter<RedditAccount, ViewHolder> {
 
-  List<RedditAccount> accounts;
-
-  public AccountsListAdapter(List<RedditAccount> accounts) {
-    this.accounts = accounts;
+  public AccountsListAdapter() {
+    super(itemDifferenceCalculator);
   }
 
   @Override
   public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-    return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.account_rv_card, parent, false));
+    return new ViewHolder(LayoutInflater.from(parent.getContext())
+        .inflate(R.layout.account_rv_card, parent, false));
   }
 
   @Override
   public void onBindViewHolder(ViewHolder holder, int position) {
-    if (holder.getAdapterPosition() == accounts.size()) {
-      holder.userNameTv.setText("Add account");
-      holder.removeBtn.setVisibility(View.GONE);
-      holder.parentView.setOnClickListener(view -> {
-        Intent i = new Intent(view.getContext(), AddNewAccountActivity.class);
-        view.getContext().startActivity(i);
-      });
+    if (holder.getAdapterPosition() != getCurrentList().size()) {
+      RedditAccount acc = getItem(position);
+      if (acc != null) {
+        holder.bind(acc);
+      } else {
+        holder.clear();
+      }
     } else {
-      RedditAccount thisAcc = accounts.get(holder.getAdapterPosition());
-      holder.userNameTv.setText(thisAcc.getUsername());
-      holder.removeBtn.setVisibility(View.VISIBLE);
-      RxView.clicks(holder.removeBtn)
-          .subscribe(avoid -> {
-            //TODO: Handle removing Account
-            Log.v("remove account", thisAcc.getUsername());
-          });
+      holder.getAddAccountView();
     }
   }
 
+  private static final DiffUtil.ItemCallback<RedditAccount> itemDifferenceCalculator =
+      new ItemCallback<RedditAccount>() {
+        @Override
+        public boolean areItemsTheSame(RedditAccount oldItem, RedditAccount newItem) {
+          return oldItem.getUsername().equals(newItem.getUsername());
+        }
+
+        @Override
+        public boolean areContentsTheSame(RedditAccount oldItem, RedditAccount newItem) {
+          return oldItem.equals(newItem);
+        }
+      };
+
   @Override
   public int getItemCount() {
-    return accounts.size() + 1;
-  }
-
-  public void addAccounts(List<RedditAccount> accounts) {
-    int initSize = this.accounts.size();
-    this.accounts.addAll(accounts);
-    notifyItemRangeInserted(initSize, this.accounts.size());
-  }
-
-  public void addAccount(RedditAccount account) {
-    accounts.add(account);
-    notifyDataSetChanged();
-  }
-
-  public void updateAccounts(List<RedditAccount> accounts) {
-    this.accounts.clear();
-    this.accounts.addAll(accounts);
-    notifyDataSetChanged();
+    if (getCurrentList() == null) return 0;
+    return getCurrentList().size() + 1;
   }
 
   class ViewHolder extends RecyclerView.ViewHolder {
@@ -89,6 +80,30 @@ public class AccountsListAdapter extends RecyclerView.Adapter<ViewHolder> {
       removeBtn = itemView.findViewById(R.id.account_removebtn);
     }
 
+    public void getAddAccountView() {
+      this.userNameTv.setText("Add account");
+      this.removeBtn.setVisibility(View.GONE);
+      this.parentView.setOnClickListener(view -> {
+        Intent i = new Intent(view.getContext(), AddNewAccountActivity.class);
+        view.getContext().startActivity(i);
+      });
+    }
+
+    public void bind(RedditAccount acc) {
+      this.userNameTv.setText(acc.getUsername());
+      this.removeBtn.setVisibility(View.VISIBLE);
+      RxView.clicks(this.removeBtn)
+          .subscribe(avoid -> {
+            //TODO: Handle removing Account
+            Log.v("remove account", acc.getUsername());
+          });
+    }
+
+    public void clear() {
+      this.userNameTv.setText("");
+      this.removeBtn.setVisibility(View.VISIBLE);
+      this.parentView.setOnClickListener(null);
+    }
   }
 
 }
