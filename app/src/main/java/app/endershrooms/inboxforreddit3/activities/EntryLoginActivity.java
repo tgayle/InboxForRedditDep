@@ -71,8 +71,6 @@ public class EntryLoginActivity extends AppCompatActivity implements OnLoginComp
                 fragmentLoginListener.onCompleteLogin(new RedditAccount(jsonMeResponse.name, jsonLoginResponse));
               });
         });
-
-
   }
 
   public synchronized void registerDataUpdateListener(LoginUpdateListener listener) {

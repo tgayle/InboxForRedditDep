@@ -6,10 +6,12 @@ import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
+
+import java.util.List;
+
 import app.endershrooms.inboxforreddit3.models.RedditAccount;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
-import java.util.List;
 
 /**
  * Created by Travis on 3/23/2018.
@@ -30,7 +32,7 @@ public interface AccountDao {
   public Flowable<List<RedditAccount>> getAllAccounts();
 
   @Query("SELECT * FROM accounts")
-  public Flowable<RedditAccount> getAccountsFlowable();
+  public Flowable<RedditAccount> getAccountsObservable();
 
   @Query("SELECT * FROM accounts WHERE username LIKE :name")
   public Single<RedditAccount> getAccountFromName(String name);

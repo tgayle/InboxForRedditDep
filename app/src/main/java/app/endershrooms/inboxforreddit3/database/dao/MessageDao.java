@@ -56,4 +56,10 @@ public interface MessageDao {
 
   @Query("SELECT * FROM messages WHERE messageOwner LIKE :account LIMIT 1")
   public Single<List<Message>> getFirstMessage(String account);
+
+  @Query("SELECT t1.* FROM messages AS t1"
+      + " JOIN (SELECT parentMessageName, MAX(timestamp) timestamp FROM messages GROUP BY parentMessageName) AS t2"
+      + " ON t1.parentMessageName = t2.parentMessageName AND t1.timestamp = t2.timestamp AND t1.messageOwner LIKE :account"
+      + " ORDER BY timestamp")
+  public Single<List<Message>> getNewestMessageForAllConversationsForUser(String account);
 }

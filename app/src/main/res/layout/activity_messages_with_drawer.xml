@@ -10,12 +10,14 @@
 
   <FrameLayout
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:id="@+id/messages_activity_fragholder">
 
-    <include
-      layout="@layout/activity_messages"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"/>
+    <!--<include-->
+      <!--layout="@layout/activity_messages_fragment"-->
+      <!--android:layout_width="match_parent"-->
+      <!--android:layout_height="match_parent"/>-->
+
 
   </FrameLayout>
 
@@ -31,12 +33,10 @@
       android:layout_width="match_parent"
       android:layout_height="match_parent">
 
-
       <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
-
 
         <RelativeLayout
           android:id="@+id/main_drawer_navheader"

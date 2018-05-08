@@ -6,6 +6,7 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import app.endershrooms.inboxforreddit3.account.Token.AccessToken;
 import app.endershrooms.inboxforreddit3.account.Token.RefreshToken;
 import app.endershrooms.inboxforreddit3.net.model.JSONLoginResponse;
@@ -34,6 +35,8 @@ public class RedditAccount implements Serializable {
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
     this.accountIsNew = accountIsNew;
+    Log.d("RoomReddit", username + " created from room and account is " + (accountIsNew ? "new":"not new"));
+    //FIXME: Accounts get marked as not new too soon?
   }
 
   @Ignore
@@ -50,6 +53,7 @@ public class RedditAccount implements Serializable {
     this.accessToken = new AccessToken(jsonLoginResponse.access_token, jsonLoginResponse.expires_in);
     this.refreshToken = new RefreshToken(jsonLoginResponse.refresh_token);
     this.accountIsNew = true;
+    Log.d("AccountCreate", username + " created with " +((accountIsNew) ? "new" : "not new"));
   }
 
   @NonNull
@@ -86,6 +90,7 @@ public class RedditAccount implements Serializable {
   }
 
   public void setAccountIsNew(boolean accountIsNew) {
+    Log.d("Account manage", username + " was set to " + accountIsNew + " from " + this.accountIsNew);
     this.accountIsNew = accountIsNew;
   }
 

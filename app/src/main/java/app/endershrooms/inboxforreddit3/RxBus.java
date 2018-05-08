@@ -34,11 +34,12 @@ public class RxBus {
 
   public static class Subjects {
     public static final int ON_ACCOUNT_UPDATE = 0;
+    public static final int ON_ACCOUNT_ADDED  = 1;
   }
 
 
   @Retention(SOURCE)
-  @IntDef({Subjects.ON_ACCOUNT_UPDATE})
+  @IntDef({Subjects.ON_ACCOUNT_UPDATE, Subjects.ON_ACCOUNT_ADDED})
   @interface Subject {}
 
   /**

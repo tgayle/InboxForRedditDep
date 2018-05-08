@@ -3,6 +3,8 @@ package app.endershrooms.inboxforreddit3.activities;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import app.endershrooms.inboxforreddit3.R;
+import app.endershrooms.inboxforreddit3.RxBus;
+import app.endershrooms.inboxforreddit3.RxBus.Subjects;
 import app.endershrooms.inboxforreddit3.Singleton;
 import app.endershrooms.inboxforreddit3.account.Authentication;
 import app.endershrooms.inboxforreddit3.fragments.LoginFragment;
@@ -32,6 +34,7 @@ public class AddNewAccountActivity extends AppCompatActivity implements OnLoginC
               .subscribe(jsonMeResponse -> {
                 RedditAccount newAccount = new RedditAccount(jsonMeResponse.name, jsonLoginResponse);
                 Singleton.get().getDb().accounts().addAccount(newAccount);
+                RxBus.publish(Subjects.ON_ACCOUNT_ADDED, newAccount.getUsername());
                 finish();
               });
         });
