@@ -1,6 +1,7 @@
 package app.endershrooms.inboxforreddit3.repositories;
 
 import android.arch.lifecycle.LiveData;
+import android.arch.paging.DataSource;
 import android.arch.paging.LivePagedListBuilder;
 import android.arch.paging.PagedList;
 import app.endershrooms.inboxforreddit3.Singleton;
@@ -26,12 +27,22 @@ public class MessagesRepository {
   }
 
   public LiveData<PagedList<Message>> getNewestMessagesPerConversation(RedditAccount user) {
-    return new LivePagedListBuilder<>(messageDao.getNewestMessageForAllConversationsForUser(user.getUsername()), 10).build();
+    return new LivePagedListBuilder<>(messageDao.getNewestMessageForAllConversationsForUserPagable(user.getUsername()), 10).build();
   }
 
   public ResponseWithError<Void, Throwable> loadNewestMessages(RedditAccount user) {
     //TODO: finish loading newest messages and make sure to update changes to old messages by checking currently unread messages
+    messageDao.getNewestMessageInDatabase(user.getUsername()).getValue();
     APIManager.get().downloadAllFutureMessagesAllLocations(user, 20, "", );
+  }
+
+  public LiveData<PagedList<Message>> getUnreadMessagesPagedForAccount(RedditAccount account) {
+    return new LivePagedListBuilder<>(messageDao.getUnreadMessagesForAccountPagable(account.getUsername()), 20).build();
+  }
+
+
+  public LiveData<Message> getUnreadMessagesForAccount(RedditAccount acc) {
+    return messageDao.getUnreadMessagesForAccount(acc.getUsername());
   }
 
 
