@@ -87,7 +87,6 @@ public class APIManager {
     }, errorListener);
   }
 
-  //TODO: Remove listeners and use LiveData to listen to DB?
   private void downloadUnreadMessages(RedditAccount user, int limit, String after, OnCompleteMessageLoad onCompleteMessageLoad, OnRedditApiError errorListener) {
     BeforeAfterMessageHolder mostRecentAfter = new BeforeAfterMessageHolder(after);
     AtomicInteger mostRecentNumLoaded = new AtomicInteger();

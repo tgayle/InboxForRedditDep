@@ -33,12 +33,10 @@ public class MessagesRepository {
     return new LivePagedListBuilder<>(messageDao.getNewestMessageForAllConversationsForUserPagable(user.getUsername()), 10).build();
   }
 
-  //TODO: pass in correct after by listening in activity instead of hoping for getvalue()
   public LiveData<ResponseWithError<String, Throwable>> loadNewestMessages(RedditAccount user) {
-    //TODO: finish loading newest messages and make sure to update changes to old messages by checking currently unread messages
     MutableLiveData<ResponseWithError<String, Throwable>> result = new MutableLiveData<>();
     ResponseWithError<String, Throwable> response = new ResponseWithError<>(null, null);
-//    Message newestMsg = messageDao.getNewestMessageInDatabase(user.getUsername()).getValue();
+
     messageDao.getNewestMessageInDatabaseAsSingle(user.getUsername())
         .subscribeOn(Schedulers.io())
         .subscribe(newestMsg -> {
