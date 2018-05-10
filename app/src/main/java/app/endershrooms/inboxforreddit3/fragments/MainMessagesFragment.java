@@ -163,6 +163,7 @@ public class MainMessagesFragment extends Fragment {
     //TODO: Replying to messages
     //TODO: Message notifications
     //TODO: Viewing images and webpages in here.
+    //TODO: Revoke token on account remove.
 
     return inflater.inflate(R.layout.activity_messages_fragment, container,false);
   }
