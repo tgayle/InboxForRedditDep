@@ -11,6 +11,7 @@ import app.endershrooms.inboxforreddit3.models.reddit.Message;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import app.endershrooms.inboxforreddit3.models.reddit.ResponseWithError;
 import app.endershrooms.inboxforreddit3.net.APIManager;
+import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import java.util.List;
 
@@ -92,10 +93,15 @@ public class MessagesRepository {
   }
 
   public LiveData<List<Message>> getAllMessagesForAccount(RedditAccount user) {
-   return  messageDao.getAllUserMessagesAsc(user.getUsername());
+   return messageDao.getAllUserMessagesAsc(user.getUsername());
   }
 
 
-
-
+  public void removeAccountMessages(RedditAccount removedAccount) {
+    Single.fromCallable(() -> messageDao.deleteAllMessagesForAccount(removedAccount.getUsername()))
+        .subscribeOn(Schedulers.io())
+        .subscribe(removed -> {
+          Log.d("RemoveMessages", removedAccount.getUsername() + " had " + removed + " messages removed");
+        });
+  }
 }

@@ -32,6 +32,8 @@ public interface MessageDao {
   static final String SELECT_ALL_MESSAGES_FOR_CONVERSATION_FOR_ACCOUNT = "SELECT * FROM messages WHERE messageOwner LIKE :account AND parentMessageName LIKE :parentname ORDER BY timestamp ASC";
   static final String SELECT_ALL_PARENT_NAMES_FOR_ACCOUNT = "SELECT DISTINCT parentMessageName FROM messages WHERE messageOwner LIKE :account ORDER BY timestamp ASC";
 
+  static final String DELETE_ALL_MESSAGES_FOR_ACCOUNT = "DELETE FROM messages WHERE messageOwner LIKE :username";
+
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   public Long insertMessage(Message message);
 
@@ -83,4 +85,7 @@ public interface MessageDao {
 
   @Query(SELECT_ALL_UNREAD_MESSAGES_FOR_ACCOUNT)
   public DataSource.Factory<Integer, Message> getUnreadMessagesForAccountPagable(String account);
+
+  @Query(DELETE_ALL_MESSAGES_FOR_ACCOUNT)
+  public int deleteAllMessagesForAccount(String username);
 }

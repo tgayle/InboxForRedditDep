@@ -111,6 +111,7 @@ public class MessagesActivityViewModel extends AndroidViewModel {
 
   public void removeAccount(RedditAccount removedAccount) {
     userRepo.removeAccount(removedAccount);
+    messageRepo.removeAccountMessages(removedAccount);
     if (currentAccount.getValue() != null) {
       /*
       If the current account is the same as the account being removed, then switch to the first

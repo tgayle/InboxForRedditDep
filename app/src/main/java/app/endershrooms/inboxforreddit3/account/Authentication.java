@@ -15,22 +15,6 @@ public class Authentication{
   public static final String authorizationHeader = "Basic " + Base64
       .encodeToString(creds.getBytes(), Base64.NO_WRAP);
 
-  public enum GRANT_TYPE {
-    FIRST_TOKEN("authorization_code"),
-    REFRESH_TOKEN("refresh_token");
-
-    private String type;
-
-    GRANT_TYPE(String t) {
-      type = t;
-    }
-
-    public String getVal() {
-      return type;
-    }
-  }
-
-
   public static class Params {
     public static abstract class AuthParams extends HashMap<String, String> {
     }
