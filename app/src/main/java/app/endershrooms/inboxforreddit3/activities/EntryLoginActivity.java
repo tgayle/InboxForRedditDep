@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.adapters.WelcomeActivityViewPagerAdapter;
+import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import app.endershrooms.inboxforreddit3.viewmodels.EntryLoginActivityViewModel;
 import app.endershrooms.inboxforreddit3.views.NoSwipeViewPager;
 
@@ -25,6 +26,14 @@ public class EntryLoginActivity extends AppCompatActivity {
     viewPager.setCurrentItem(0);
 
     EntryLoginActivityViewModel viewModel = ViewModelProviders.of(this).get(EntryLoginActivityViewModel.class);
+
+    viewModel.getAllAccounts().observe(this, redditAccounts -> {
+      if (redditAccounts != null) {
+        for (RedditAccount redditAccount : redditAccounts) {
+          viewModel.onUserDetected(redditAccount);
+        }
+      }
+    });
 
     viewModel.getAddedAccount().observe(this, account -> {
       if (account != null) {

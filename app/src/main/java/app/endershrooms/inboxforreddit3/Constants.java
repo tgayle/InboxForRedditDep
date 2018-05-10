@@ -29,6 +29,7 @@ public class Constants {
 
   public static final String SHARED_PREFERENCES_MAIN = "inbox_for_reddit_main";
   public static final String SHARED_PREFS_CURRENT_ACC = "current_account";
+  public static final String USER_REMOVED = "USER_REMOVED";
 
   public static String getOauthLoginLink(String state) {
     return Uri.parse("https://www.reddit.com/api/v1/authorize.compact?")

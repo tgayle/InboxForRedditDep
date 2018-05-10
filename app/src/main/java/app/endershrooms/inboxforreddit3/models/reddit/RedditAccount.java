@@ -119,7 +119,8 @@ public class RedditAccount implements Serializable {
       RedditAccount otherAcc = (RedditAccount) obj;
       return this.getUsername().equals(otherAcc.getUsername()) &&
           this.getAccessToken().equals(otherAcc.getAccessToken()) &&
-          this.getRefreshToken().equals(otherAcc.getRefreshToken());
+          this.getRefreshToken().equals(otherAcc.getRefreshToken()) &&
+          this.getAccountIsNew() == otherAcc.getAccountIsNew();
     }
     return false;
   }

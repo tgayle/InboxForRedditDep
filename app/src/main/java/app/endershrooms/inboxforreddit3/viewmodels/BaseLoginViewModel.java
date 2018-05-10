@@ -44,10 +44,9 @@ public abstract class BaseLoginViewModel extends AndroidViewModel {
   public void setAddedAccount(RedditAccount acc) {
     addedAccount.postValue(acc);
     sharedPreferences.edit().putString(Constants.SHARED_PREFS_CURRENT_ACC, acc.getUsername()).apply(); //set current user
-    addAccountToDatabase(acc);
     Intent i = new Intent(getApplication().getApplicationContext(), MessagesActivity.class);
     getApplication().getApplicationContext().startActivity(i);
-    Log.v("EntryLoginActivity",
+    Log.v("BaseLoginViewModel",
         "Going into Messages with " + acc.getUsername());
   }
 

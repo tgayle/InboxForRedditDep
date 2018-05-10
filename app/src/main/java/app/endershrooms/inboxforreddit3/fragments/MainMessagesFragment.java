@@ -1,12 +1,14 @@
 package app.endershrooms.inboxforreddit3.fragments;
 
 
+import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -15,15 +17,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import app.endershrooms.inboxforreddit3.R;
-import app.endershrooms.inboxforreddit3.Singleton;
 import app.endershrooms.inboxforreddit3.adapters.MessagesConversationRecyclerViewAdapter;
-import app.endershrooms.inboxforreddit3.models.reddit.Conversation;
-import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
-import app.endershrooms.inboxforreddit3.net.APIManager;
+import app.endershrooms.inboxforreddit3.models.reddit.ResponseWithError;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel;
-import io.reactivex.Single;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
+import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel.LoadingStatusEnum;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -45,6 +42,7 @@ public class MainMessagesFragment extends Fragment {
     MainMessagesFragment fragment = new MainMessagesFragment();
     Bundle args = new Bundle();
     fragment.setArguments(args);
+    Log.d("MainMessagesFragment", "MainMessagesFragmentStarted");
     return fragment;
   }
 
@@ -55,14 +53,10 @@ public class MainMessagesFragment extends Fragment {
     }
   }
 
-  Snackbar snack = Snackbar.make(getActivity().findViewById(R.id.messages_activity_fragholder), "Loading messages...", Snackbar.LENGTH_INDEFINITE);
-
   @Override
   public void onActivityCreated(@Nullable Bundle savedInstanceState) {
     super.onActivityCreated(savedInstanceState);
-
     MessagesActivityViewModel viewModel = ViewModelProviders.of(getActivity()).get(MessagesActivityViewModel.class);
-
     messageRv = (RecyclerView) getView().findViewById(R.id.message_rv);
     messageRv.setLayoutManager(new LinearLayoutManager(getContext()));
     messageRv.setAdapter(messageConversationAdapter);
@@ -70,6 +64,7 @@ public class MainMessagesFragment extends Fragment {
     ((LinearLayoutManager) messageRv.getLayoutManager()).setStackFromEnd(true);
 
     swipeRefreshLayout = (SwipeRefreshLayout) getView().findViewById(R.id.activities_messages_swiperefresh);
+    View snackbarView = getActivity().findViewById(R.id.messages_activity_fragholder);
 
     TextView userTv = (TextView) getView().findViewById(R.id.username_tv);
 
@@ -79,22 +74,48 @@ public class MainMessagesFragment extends Fragment {
         Log.d("Messages Fragment", redditAccount.getUsername() + " account is " + ((redditAccount.getAccountIsNew()) ? "new" : "not new"));
 
         swipeRefreshLayout.setOnRefreshListener(() -> {
-          updateMessagesAndView(redditAccount);
-        });
-        if (redditAccount.getAccountIsNew()) {
-          loadAllPastMessages(redditAccount);
-        } else {
-
-          viewModel.getMessagesForConversationView().observe(MainMessagesFragment.this, conversations -> {
-            messageConversationAdapter.submitList(conversations);
+          viewModel.loadNewestMessages().observe(this, stringThrowableResponseWithError -> {
+            if (stringThrowableResponseWithError != null) {
+              if (stringThrowableResponseWithError.getData() == null) {
+                swipeRefreshLayout.setRefreshing(false);
+              }
+            }
           });
-          //Load messages in paged view?
+        });
+
+        if (redditAccount.getAccountIsNew()) { //Load all messages if new
+          LiveData<ResponseWithError<String, Throwable>> messagesStatus = viewModel.loadAllMessages();
+          viewModel.setAccountIsNew(false);
+          Snackbar loading = Snackbar.make(snackbarView, "Loading...", Snackbar.LENGTH_INDEFINITE);
+          loading.show();
+          messagesStatus.observe(this, response -> {
+            if (response != null) {
+              if (response.getError() == null) {
+                String afterResult = response.getData();
+                String text = "After is " + afterResult;
+                loading.setText(text);
+                Log.d("MessagesFragment", text);
+                if (afterResult == null) {
+                  loading.dismiss();
+                  viewModel.setLoadingStatus(LoadingStatusEnum.DONE);
+                }
+              } else {
+                viewModel.setLoadingStatus(LoadingStatusEnum.ERROR, response.getError());
+              }
+            }
+          });
         }
-        Snackbar errorSnack = Snackbar.make(getActivity().findViewById(R.id.messages_activity_fragholder),
+
+        viewModel.getMessagesForConversationView().observe(MainMessagesFragment.this, conversations -> {
+          messageConversationAdapter.submitList(conversations);
+        });
+
+        Snackbar errorSnack = Snackbar.make(snackbarView,
             "There was an issue...", Snackbar.LENGTH_INDEFINITE);
 
         viewModel.getLoadingStatus().observe(this, newStatus -> {
           if (newStatus != null) {
+            errorSnack.setAction(null, null); //reset in case it changed
             switch (newStatus.getData()) {
               case LOADING:
                 swipeRefreshLayout.setRefreshing(true);
@@ -102,13 +123,28 @@ public class MainMessagesFragment extends Fragment {
                 break;
               case ERROR:
                 swipeRefreshLayout.setRefreshing(false);
+                errorSnack.setAction("View", view -> {
+                  createAlertDialog(newStatus.getError()).show();
+                });
                 errorSnack.show();
+                break;
+              case DONE:
+                swipeRefreshLayout.setRefreshing(false);
+                errorSnack.dismiss();
                 break;
             }
           }
         });
+
       }
     });
+  }
+
+  public AlertDialog createAlertDialog(String message) {
+    return new AlertDialog.Builder(getContext())
+        .setMessage(message)
+        .setTitle("Error")
+        .create();
   }
 
   @Override
@@ -122,77 +158,4 @@ public class MainMessagesFragment extends Fragment {
 
     return inflater.inflate(R.layout.activity_messages_fragment, container,false);
   }
-
-  void loadAllPastMessages(RedditAccount currentUser) {
-    swipeRefreshLayout.setRefreshing(true);
-    snack.show();
-    APIManager.get().updateUserToken(currentUser, () -> {
-      APIManager.get().downloadAllPastMessages(currentUser, "inbox", 20, "", (beforOrAfter, after, messagesLoaded) -> {
-        if (after == null) {
-          System.out.println("Download ended from Activity: after = " + after + " and messagesLoaded was " + messagesLoaded);
-          APIManager.get().downloadAllPastMessages(currentUser, "sent", 20, "", ((beforeOrAfter, sentAfter, numAfterLoaded) -> {
-            if (sentAfter == null){
-              System.out.println("Download sent ended from Activity: after = " + sentAfter + " and messagesLoaded was " + messagesLoaded);
-              Singleton.get().getDb().messages().getAllUserMessagesAsc(currentUser.getUsername())
-                  .subscribeOn(Schedulers.io())
-                  .observeOn(Schedulers.computation())
-                  .map(Conversation::formConversations)
-                  .observeOn(AndroidSchedulers.mainThread())
-                  .subscribe(conversations -> {
-                    swipeRefreshLayout.setRefreshing(false);
-                    currentUser.setAccountIsNew(false);
-                    Single.fromCallable(() -> Singleton.get().getDb().accounts().updateAccount(currentUser))
-                        .subscribeOn(Schedulers.io())
-                        .subscribe();
-                  });
-            }
-          }), throwable -> {
-
-          });
-        }
-      }, throwable -> {
-        Snackbar.make(getActivity().findViewById(R.id.messages_activity_fragholder), "Issue loading messages " + "loadAllPastMessages()", Snackbar.LENGTH_SHORT).show();
-        swipeRefreshLayout.setRefreshing(false);
-      });
-    }, tokenError -> {
-      Snackbar.make(getActivity().findViewById(R.id.messages_activity_fragholder), "Error updating token", Snackbar.LENGTH_LONG).setAction("Log Error", (view) -> {
-        System.out.println(tokenError);
-      }).show();
-    });
-  }
-
-  void updateMessagesAndView(RedditAccount currentUser) {
-    swipeRefreshLayout.setRefreshing(true);
-    APIManager.get().updateUserToken(currentUser, () -> {
-      Singleton.get().getDb().messages().getNewestMessageInDatabase(currentUser.getUsername())
-          .subscribeOn(Schedulers.io())
-          .subscribe(newestMsg-> {
-            APIManager.get().downloadAllFutureMessages(currentUser, "inbox", 15, newestMsg.getMessageName(),
-                (beforeOrAfter, after, messagesLoaded) -> {
-                  if (after == null) {
-                    System.out.println("From activity: beforeOrAfter: " + beforeOrAfter + " pager is " + after + " messagesLoaded is " + messagesLoaded);
-                    Singleton.get().getDb().messages().getAllUserMessagesAsc(currentUser.getUsername())
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(Schedulers.computation())
-                        .map(Conversation::formConversations)
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(conversations -> {
-                          swipeRefreshLayout.setRefreshing(false);
-                        });
-                  }
-
-                }, err -> {
-                  Snackbar.make(getActivity().findViewById(R.id.messages_activity_fragholder), "There was an issue loading messages. " + err , Snackbar.LENGTH_SHORT).show();
-                });
-          }, (err) -> {
-            System.out.println("There was an issue loading the newest message : " + err);
-          });
-
-    }, tokenError -> {
-      Snackbar.make(getActivity().findViewById(R.id.messages_activity_fragholder), "Error updating token", Snackbar.LENGTH_LONG).setAction("Log Error", (view) -> {
-        System.out.println(tokenError);
-      }).show();
-    });
-  }
-
 }

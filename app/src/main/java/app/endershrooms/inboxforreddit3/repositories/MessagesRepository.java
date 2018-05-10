@@ -1,15 +1,17 @@
 package app.endershrooms.inboxforreddit3.repositories;
 
 import android.arch.lifecycle.LiveData;
-import android.arch.paging.DataSource;
+import android.arch.lifecycle.MutableLiveData;
 import android.arch.paging.LivePagedListBuilder;
 import android.arch.paging.PagedList;
+import android.util.Log;
 import app.endershrooms.inboxforreddit3.Singleton;
 import app.endershrooms.inboxforreddit3.database.dao.MessageDao;
 import app.endershrooms.inboxforreddit3.models.reddit.Message;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import app.endershrooms.inboxforreddit3.models.reddit.ResponseWithError;
 import app.endershrooms.inboxforreddit3.net.APIManager;
+import java.util.List;
 
 /**
  * Created by Travis on 5/7/2018.
@@ -30,20 +32,56 @@ public class MessagesRepository {
     return new LivePagedListBuilder<>(messageDao.getNewestMessageForAllConversationsForUserPagable(user.getUsername()), 10).build();
   }
 
-  public ResponseWithError<Void, Throwable> loadNewestMessages(RedditAccount user) {
+  //TODO: pass in correct after by listening in activity instead of hoping for getvalue()
+  public LiveData<ResponseWithError<String, Throwable>> loadNewestMessages(RedditAccount user) {
     //TODO: finish loading newest messages and make sure to update changes to old messages by checking currently unread messages
-    messageDao.getNewestMessageInDatabase(user.getUsername()).getValue();
-    APIManager.get().downloadAllFutureMessagesAllLocations(user, 20, "", );
+    MutableLiveData<ResponseWithError<String, Throwable>> result = new MutableLiveData<>();
+    ResponseWithError<String, Throwable> response = new ResponseWithError<>(null, null);
+    Message newestMsg = messageDao.getNewestMessageInDatabase(user.getUsername()).getValue();
+    //Get newest message
+    Log.d("MessageRepo", "Init newest message is " + (newestMsg == null ? newestMsg : newestMsg.getMessageName()));
+    String nameToStartFrom = newestMsg == null ? "" : newestMsg.getMessageName();
+    APIManager.get().downloadAllFutureMessagesAllLocations(user, 20, nameToStartFrom,
+        (beforeOrAfter, after, messagesLoaded) -> {
+          response.setData(after);
+          result.postValue(response);
+          Log.d("MessageRepo", "Load newest message after is " + after);
+        }, throwable -> {
+          response.setError(throwable);
+          result.postValue(response);
+        });
+    return result;
+  }
+
+  public LiveData<ResponseWithError<String, Throwable>> loadAllMessages(RedditAccount user) {
+    MutableLiveData<ResponseWithError<String, Throwable>> result = new MutableLiveData<>();
+    //String is the after value of a reddit response
+    ResponseWithError<String, Throwable> response = new ResponseWithError<>(null, null);
+
+    APIManager.get().downloadAllPastMessagesAllLocations(user, 20,
+        (beforeOrAfter, after, messagesLoaded) -> {
+          response.setData(after);
+          result.postValue(response);
+        }, throwable -> {
+          response.setError(throwable);
+          result.postValue(response);
+        });
+    return result;
   }
 
   public LiveData<PagedList<Message>> getUnreadMessagesPagedForAccount(RedditAccount account) {
     return new LivePagedListBuilder<>(messageDao.getUnreadMessagesForAccountPagable(account.getUsername()), 20).build();
   }
 
-
   public LiveData<Message> getUnreadMessagesForAccount(RedditAccount acc) {
     return messageDao.getUnreadMessagesForAccount(acc.getUsername());
   }
+
+  public LiveData<List<Message>> getAllMessagesForAccount(RedditAccount user) {
+   return  messageDao.getAllUserMessagesAsc(user.getUsername());
+  }
+
+
 
 
 }

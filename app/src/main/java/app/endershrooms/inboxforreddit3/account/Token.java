@@ -1,6 +1,5 @@
 package app.endershrooms.inboxforreddit3.account;
 
-import android.util.Log;
 import java.io.Serializable;
 
 /**
@@ -37,9 +36,9 @@ public abstract class Token implements Serializable {
       long currentTime = System.currentTimeMillis();
       boolean isExpire = currentTime > expiresWhen;
 
-      Log.v("Token", "CurrentTime is " + currentTime +
-          ". Expire time is " + expiresWhen + ". Comparison is " +
-          currentTime + " > " + expiresWhen + " == " + isExpire);
+//      Log.v("Token", "CurrentTime is " + currentTime +
+//          ". Expire time is " + expiresWhen + ". Comparison is " +
+//          currentTime + " > " + expiresWhen + " == " + isExpire);
       return isExpire;
     }
 

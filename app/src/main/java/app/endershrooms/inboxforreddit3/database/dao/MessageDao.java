@@ -9,7 +9,6 @@ import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 import app.endershrooms.inboxforreddit3.models.reddit.Message;
-import io.reactivex.Flowable;
 import java.util.List;
 
 /**
@@ -57,7 +56,7 @@ public interface MessageDao {
   public LiveData<List<Message>> getAllUserMessagesDesc(String account); //Newest First
 
   @Query(SELECT_ALL_FOR_ACCOUNT)
-  public Flowable<List<Message>> getAllMessagesFromAllAccounts();
+  public LiveData<List<Message>> getAllMessagesFromAllAccounts();
 
   @Query(SELECT_ALL_PARENT_NAMES_FOR_ACCOUNT)
   public LiveData<List<String>> getAllParentConversationNamesForAccount(String account);

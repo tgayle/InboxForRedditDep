@@ -19,7 +19,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import app.endershrooms.inboxforreddit3.MiscFuncs;
 import app.endershrooms.inboxforreddit3.R;
-import app.endershrooms.inboxforreddit3.adapters.MessagesConversationRecyclerViewAdapter.Viewholder;
 import app.endershrooms.inboxforreddit3.models.reddit.Message;
 
 /**
@@ -45,7 +44,7 @@ public class MessagesConversationRecyclerViewAdapter extends
     if (message != null) {
       vh.bind(message);
     } else {
-      vh.clear();
+      vh.hide();
     }
   }
 
@@ -67,6 +66,8 @@ public class MessagesConversationRecyclerViewAdapter extends
           return oldItem.equals(newItem);
         }
       };
+
+  }
 
   class Viewholder extends ViewHolder {
 
@@ -90,6 +91,7 @@ public class MessagesConversationRecyclerViewAdapter extends
     }
 
     public void bind(Message message) {
+      clear();
       String trimmedMsg = message.getMessageBody().trim();
       this.subjectTv.setText(message.getSubject());
       if (message.getMessageOwner().equals(message.getAuthor())) {
@@ -117,6 +119,7 @@ public class MessagesConversationRecyclerViewAdapter extends
     }
 
     public void clear() {
+      parentCardView.setVisibility(View.VISIBLE);
       parentCardView.setOnClickListener(null);
       subjectTv.setText("");
       usernameTv.setText("");
@@ -125,5 +128,8 @@ public class MessagesConversationRecyclerViewAdapter extends
       messageTv.setText("");
 
     }
+
+    public void hide() {
+      parentCardView.setVisibility(View.GONE);
+    }
   }
-}

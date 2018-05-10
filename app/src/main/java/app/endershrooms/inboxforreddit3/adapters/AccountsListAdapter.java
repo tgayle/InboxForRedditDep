@@ -14,8 +14,8 @@ import android.widget.TextView;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.activities.AddNewAccountActivity;
 import app.endershrooms.inboxforreddit3.adapters.AccountsListAdapter.ViewHolder;
+import app.endershrooms.inboxforreddit3.interfaces.OnAccountListInteraction;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
-import com.jakewharton.rxbinding2.view.RxView;
 
 /**
  * Created by Travis on 3/22/2018.
@@ -23,8 +23,10 @@ import com.jakewharton.rxbinding2.view.RxView;
 
 public class AccountsListAdapter extends PagedListAdapter<RedditAccount, ViewHolder> {
 
-  public AccountsListAdapter() {
+  OnAccountListInteraction accountListInteraction;
+  public AccountsListAdapter(OnAccountListInteraction onAccountRemovedListener) {
     super(ACCOUNT_DIFFERENCE_CALLBACK);
+    this.accountListInteraction = onAccountRemovedListener;
   }
 
   @Override
@@ -43,6 +45,7 @@ public class AccountsListAdapter extends PagedListAdapter<RedditAccount, ViewHol
         holder.clear();
       }
     } else {
+      holder.clear();
       holder.getAddAccountView();
     }
   }
@@ -83,6 +86,7 @@ public class AccountsListAdapter extends PagedListAdapter<RedditAccount, ViewHol
     public void getAddAccountView() {
       this.userNameTv.setText("Add account");
       this.removeBtn.setVisibility(View.GONE);
+      this.parentView.setOnClickListener(null);
       this.parentView.setOnClickListener(view -> {
         Intent i = new Intent(view.getContext(), AddNewAccountActivity.class);
         view.getContext().startActivity(i);
@@ -92,17 +96,23 @@ public class AccountsListAdapter extends PagedListAdapter<RedditAccount, ViewHol
     public void bind(RedditAccount acc) {
       this.userNameTv.setText(acc.getUsername());
       this.removeBtn.setVisibility(View.VISIBLE);
-      RxView.clicks(this.removeBtn)
-          .subscribe(avoid -> {
-            //TODO: Handle removing Account
-            Log.v("remove account", acc.getUsername());
-          });
+
+      this.parentView.setOnClickListener(view -> {
+        accountListInteraction.onAccountSelected(acc);
+        Log.d("AccountsListAdapter", "Account selected " + acc.getUsername());
+      });
+
+      this.removeBtn.setOnClickListener(view -> {
+        accountListInteraction.onAccountRemoved(acc);
+        Log.v("AccountsListAdapter", acc.getUsername());
+      });
     }
 
     public void clear() {
       this.userNameTv.setText("");
       this.removeBtn.setVisibility(View.VISIBLE);
       this.parentView.setOnClickListener(null);
+      this.removeBtn.setOnClickListener(null);
     }
   }
 

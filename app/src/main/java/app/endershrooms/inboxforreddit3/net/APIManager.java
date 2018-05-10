@@ -3,7 +3,6 @@ package app.endershrooms.inboxforreddit3.net;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 import android.support.annotation.StringDef;
-import android.util.Log;
 import app.endershrooms.inboxforreddit3.Singleton;
 import app.endershrooms.inboxforreddit3.account.Authentication;
 import app.endershrooms.inboxforreddit3.account.Token.AccessToken;
@@ -30,10 +29,10 @@ public class APIManager {
     return apiManager;
   }
 
-  public void updateUserToken(RedditAccount user, OnCompleteInterface listener, OnRedditApiError errListener) {
+  private void updateUserToken(RedditAccount user, OnCompleteInterface listener, OnRedditApiError errListener) {
     if (user.getAccessToken() != null && !user.getAccessToken().isTokenExpired()) {
-      Log.v("Token work", "No need to update token for " +user.getUsername());
-      Log.v("Token noupdate", user.getAccessToken().getExpiresWhen() + " " + user.getUsername());
+      //Log.v("Token work", "No need to update token for " +user.getUsername());
+      //Log.v("Token noupdate", user.getAccessToken().getExpiresWhen() + " " + user.getUsername());
       listener.onComplete();
       return;
     }
@@ -42,7 +41,7 @@ public class APIManager {
         .get().getRedditApi().getAccessTokenFromCode(Authentication.authorizationHeader, new Authentication.Params.RefreshParams(user.getRefreshToken()))
         .observeOn(Schedulers.io())
         .subscribe(jsonLoginResponse -> {
-          Log.v("Token work", "Updated token. New results are " + jsonLoginResponse.access_token + " and " + jsonLoginResponse.expires_in);
+          //Log.v("Token work", "Updated token. New results are " + jsonLoginResponse.access_token + " and " + jsonLoginResponse.expires_in);
           user.setAccessToken(new AccessToken(jsonLoginResponse.access_token, jsonLoginResponse.expires_in));
           Singleton.get().getDb().accounts().updateAccount(user);
           listener.onComplete();
@@ -50,8 +49,6 @@ public class APIManager {
           errListener.onError(err);
         });
   }
-
-
 
   @Retention(SOURCE)
   @StringDef({"before", "after"})
@@ -68,21 +65,20 @@ public class APIManager {
           .observeOn(Schedulers.io())
           .subscribe(messagesJSONResponse -> {
             Singleton.get().getDb().messages().insertMessages(messagesJSONResponse.otherConvertJsonToMessages(user));
-            System.out.println("Download messages called with  " +beforeOrAfter + " " + beforeAfter);
             onCompleteInterface.onComplete(beforeOrAfter, messagesJSONResponse.data.after, messagesJSONResponse.data.children.size());
           }, errorListener::onError);
     }, errorListener::onError);
 
   }
 
-  public void downloadAllPastMessages(RedditAccount user, String where, int limit, String after, OnCompleteMessageLoad onCompleteInterface, OnRedditApiError errorListener) {
+  private void downloadAllPastMessages(RedditAccount user, String where, int limit, String after, OnCompleteMessageLoad onCompleteInterface, OnRedditApiError errorListener) {
     BeforeAfterMessageHolder mostRecentAfter = new BeforeAfterMessageHolder(after);
     AtomicInteger mostRecentNumLoaded = new AtomicInteger();
 
     downloadMessages(user, where, limit, "after", after, (beforeOrAfter, newAfter, messagesLoaded) -> {
       if (after != null) {
         downloadAllPastMessages(user, where, limit, newAfter, onCompleteInterface, errorListener);
-        System.out.println("Downloading all past messages recursed. Count is " + (messagesLoaded) + " and newest after loaded is " + newAfter);
+        //System.out.println("Downloading all past messages recursed. Count is " + (messagesLoaded) + " and newest after loaded is " + newAfter);
         mostRecentAfter.setCurrent(newAfter);
         mostRecentNumLoaded.set(messagesLoaded);
       } else {
@@ -92,13 +88,12 @@ public class APIManager {
   }
 
   //TODO: Remove listeners and use LiveData to listen to DB?
-  public void downloadUnreadMessages(RedditAccount user, int limit, String after, OnCompleteMessageLoad onCompleteMessageLoad, OnRedditApiError errorListener) {
+  private void downloadUnreadMessages(RedditAccount user, int limit, String after, OnCompleteMessageLoad onCompleteMessageLoad, OnRedditApiError errorListener) {
     BeforeAfterMessageHolder mostRecentAfter = new BeforeAfterMessageHolder(after);
     AtomicInteger mostRecentNumLoaded = new AtomicInteger();
-
     downloadMessages(user, "unread", limit, "after", after, (beforeOrAfter, newAfter, messagesLoaded) -> {
         downloadUnreadMessages(user, limit, newAfter, onCompleteMessageLoad, errorListener);
-        System.out.println("Downloading all unread messages recursed. Count is " + (messagesLoaded) + " and newest after loaded is " + newAfter);
+        //System.out.println("Downloading all unread messages recursed. Count is " + (messagesLoaded) + " and newest after loaded is " + newAfter);
         mostRecentAfter.setCurrent(newAfter);
         mostRecentNumLoaded.set(messagesLoaded);
       }, errorListener);
@@ -110,7 +105,12 @@ public class APIManager {
     downloadUnreadMessages(user, limit, null, onCompleteMessageLoad, errorListener);
   }
 
-  public void downloadAllFutureMessages(RedditAccount user, String where, int limit, String before, OnCompleteMessageLoad onCompleteMessageLoad, OnRedditApiError errorListener) {
+  public void downloadAllPastMessagesAllLocations(RedditAccount user, int limit, OnCompleteMessageLoad onCompleteMessageLoad, OnRedditApiError errorListener) {
+    downloadAllPastMessages(user, "inbox", limit, "", onCompleteMessageLoad, errorListener);
+    downloadAllPastMessages(user, "sent", limit, "", onCompleteMessageLoad, errorListener);
+  }
+
+  private void downloadAllFutureMessages(RedditAccount user, String where, int limit, String before, OnCompleteMessageLoad onCompleteMessageLoad, OnRedditApiError errorListener) {
     BeforeAfterMessageHolder mostRecentBefore = new BeforeAfterMessageHolder(before);
     AtomicInteger mostRecentNumLoaded = new AtomicInteger();
 
@@ -119,7 +119,7 @@ public class APIManager {
     downloadMessages(user, where, limit, "before", before, (beforeOrAfter, newBefore, messagesLoaded) -> {
       if (before != null) {
         downloadAllFutureMessages(user, where, limit, newBefore, onCompleteMessageLoad, errorListener);
-        System.out.println("Downloading all past messages recursed. Count is " + (messagesLoaded) + " and newest " + beforeOrAfter + " loaded is " + newBefore);
+        //System.out.println("Downloading all past messages recursed. Count is " + (messagesLoaded) + " and newest " + beforeOrAfter + " loaded is " + newBefore);
         mostRecentBefore.setCurrent(newBefore);
         mostRecentNumLoaded.set(messagesLoaded);
       } else {

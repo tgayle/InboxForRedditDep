@@ -6,6 +6,8 @@ import android.arch.paging.PagedList;
 import app.endershrooms.inboxforreddit3.Singleton;
 import app.endershrooms.inboxforreddit3.database.dao.AccountDao;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
+import io.reactivex.Single;
+import io.reactivex.schedulers.Schedulers;
 import java.util.List;
 
 /**
@@ -33,4 +35,16 @@ public class UserRepository {
   public LiveData<PagedList<RedditAccount>> getAccountsAsPagedList() {
     return new LivePagedListBuilder<>(accountDao.getAccountsAsPagedList(), 10).build();
   }
- }
+
+  public void removeAccount(RedditAccount account) {
+    Single.fromCallable(() -> accountDao.removeAccount(account))
+        .subscribeOn(Schedulers.io())
+        .subscribe();
+  }
+
+  public void updateAccount(RedditAccount acc) {
+    Single.fromCallable(() -> accountDao.updateAccount(acc))
+        .subscribeOn(Schedulers.io())
+        .subscribe();
+  }
+}
