@@ -30,7 +30,6 @@ public class MessagesActivityViewModel extends AndroidViewModel {
   private MutableLiveData<ResponseWithError<LoadingStatusEnum, String>> loadingStatus = new MutableLiveData<>();
   private MutableLiveData<String> currentUserName = new MutableLiveData<>();
   private SharedPreferences sharedPreferences;
-  //TODO: Use shared preferences to pass current user along.
 
   public MessagesActivityViewModel(@NonNull Application application) {
     super(application);

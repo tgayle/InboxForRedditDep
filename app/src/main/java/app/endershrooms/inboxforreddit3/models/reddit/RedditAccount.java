@@ -36,7 +36,6 @@ public class RedditAccount implements Serializable {
     this.refreshToken = refreshToken;
     this.accountIsNew = accountIsNew;
     Log.d("RoomReddit", username + " created from room and account is " + (accountIsNew ? "new":"not new"));
-    //FIXME: Accounts get marked as not new too soon?
   }
 
   @Ignore

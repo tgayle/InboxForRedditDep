@@ -51,7 +51,6 @@ public class MessagesActivity extends BaseActivity {
 
       @Override
       public void onAccountRemoved(RedditAccount account) {
-        //TODO
         model.removeAccount(account);
       }
     });
