@@ -14,7 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import app.endershrooms.inboxforreddit3.MiscFuncs;
 import app.endershrooms.inboxforreddit3.R;
-import app.endershrooms.inboxforreddit3.models.Message;
+import app.endershrooms.inboxforreddit3.models.reddit.Message;
 import java.util.List;
 
 /**
@@ -24,7 +24,7 @@ import java.util.List;
 public class MessagesRecyclerViewAdapter extends
     RecyclerView.Adapter<MessagesRecyclerViewAdapter.Viewholder> {
 
-  List<Message> messages;
+  private List<Message> messages;
 
   public MessagesRecyclerViewAdapter(List<Message> messages) {
     this.messages = messages;
@@ -47,12 +47,8 @@ public class MessagesRecyclerViewAdapter extends
     vh.dateTv.setText(MiscFuncs.getRelativeDateTime(message.getTimestamp()));
 
     vh.messageTv.setText(trim(Html.fromHtml(noTrailingwhiteLines(trimmedMsg)))); //Not trimming a second time adds weird whitespace?
-    vh.parentCardView.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        debugLog(message.getMessageName(), noTrailingwhiteLines(message.getMessageBody()));
-      }
-    });
+    vh.parentCardView.setOnClickListener(
+        v -> debugLog(message.getMessageName(), noTrailingwhiteLines(message.getMessageBody())));
 
   }
 

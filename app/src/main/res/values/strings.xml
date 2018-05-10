@@ -1,7 +1,6 @@
 <resources>
   <string name="app_name">InboxForReddit3</string>
 
-  <!-- TODO: Remove or change this placeholder text -->
   <string name="hello_blank_fragment">Hello blank fragment</string>
   <string name="login_get_accesstoken_success">Success getting access token!</string>
   <string name="login_complete_welcome_user">Welcome %s!</string>

@@ -23,7 +23,6 @@
   </android.support.v4.widget.SwipeRefreshLayout>
 
 
-
   <ProgressBar
     android:id="@+id/login_progress"
     style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"

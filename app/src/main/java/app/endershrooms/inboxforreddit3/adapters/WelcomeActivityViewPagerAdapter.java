@@ -5,6 +5,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import app.endershrooms.inboxforreddit3.fragments.LoginFragment;
 import app.endershrooms.inboxforreddit3.fragments.WelcomeActivityFragment;
+import app.endershrooms.inboxforreddit3.fragments.WelcomeActivityFragment.FragmentLoadingProgress;
 
 /**
  * Created by Travis on 1/19/2018.
@@ -30,12 +31,12 @@ public class WelcomeActivityViewPagerAdapter extends FragmentStatePagerAdapter {
     switch (position) {
       case WELCOME:
         return WelcomeActivityFragment
-            .newInstance(WelcomeActivityFragment.FragmentProgress.WELCOME);
+            .newInstance(FragmentLoadingProgress.WELCOME);
       case LOGIN:
         return LoginFragment.newInstance();
       case LOADING:
         return WelcomeActivityFragment
-            .newInstance(WelcomeActivityFragment.FragmentProgress.LOADING);
+            .newInstance(FragmentLoadingProgress.LOADING);
 
     }
 

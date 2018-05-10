@@ -20,7 +20,7 @@
     android:roundIcon="@mipmap/ic_launcher_round"
     android:supportsRtl="true"
     android:theme="@style/AppTheme">
-    <activity android:name=".activities.MainActivity">
+    <activity android:name=".activities.EntryLoginActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
 
@@ -37,10 +37,7 @@
       android:name="android.arch.lifecycle.VERSION"
       android:value="27.0.0-SNAPSHOT"/>
 
-    <activity
-      android:label="@string/title_activity_tempactivity"
-      android:name=".activities.tempactivity"
-      android:theme="@style/AppTheme.NoActionBar">
+    <activity android:name=".activities.AddNewAccountActivity">
     </activity>
   </application>
 
