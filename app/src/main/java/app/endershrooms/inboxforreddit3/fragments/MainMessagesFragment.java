@@ -30,7 +30,7 @@ import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel.Loa
 public class MainMessagesFragment extends Fragment {
 
 
-  MessagesConversationRecyclerViewAdapter messageConversationAdapter = new MessagesConversationRecyclerViewAdapter();
+  MessagesConversationRecyclerViewAdapter messageConversationAdapter;
   SwipeRefreshLayout swipeRefreshLayout;
   RecyclerView messageRv;
 
@@ -59,9 +59,10 @@ public class MainMessagesFragment extends Fragment {
     MessagesActivityViewModel viewModel = ViewModelProviders.of(getActivity()).get(MessagesActivityViewModel.class);
     messageRv = (RecyclerView) getView().findViewById(R.id.message_rv);
     messageRv.setLayoutManager(new LinearLayoutManager(getContext()));
-    messageRv.setAdapter(messageConversationAdapter);
     ((LinearLayoutManager) messageRv.getLayoutManager()).setReverseLayout(true);
     ((LinearLayoutManager) messageRv.getLayoutManager()).setStackFromEnd(true);
+    messageConversationAdapter = new MessagesConversationRecyclerViewAdapter(); //reset adapter
+    messageRv.setAdapter(messageConversationAdapter);
 
     swipeRefreshLayout = (SwipeRefreshLayout) getView().findViewById(R.id.activities_messages_swiperefresh);
     View snackbarView = getActivity().findViewById(R.id.messages_activity_fragholder);
@@ -74,13 +75,7 @@ public class MainMessagesFragment extends Fragment {
         Log.d("Messages Fragment", redditAccount.getUsername() + " account is " + ((redditAccount.getAccountIsNew()) ? "new" : "not new"));
 
         swipeRefreshLayout.setOnRefreshListener(() -> {
-          viewModel.loadNewestMessages().observe(this, stringThrowableResponseWithError -> {
-            if (stringThrowableResponseWithError != null) {
-              if (stringThrowableResponseWithError.getData() == null) {
-                swipeRefreshLayout.setRefreshing(false);
-              }
-            }
-          });
+          startRefresh(viewModel);
         });
 
         if (redditAccount.getAccountIsNew()) { //Load all messages if new
@@ -104,6 +99,8 @@ public class MainMessagesFragment extends Fragment {
               }
             }
           });
+        } else {
+          startRefresh(viewModel);
         }
 
         viewModel.getMessagesForConversationView().observe(MainMessagesFragment.this, conversations -> {
@@ -136,6 +133,18 @@ public class MainMessagesFragment extends Fragment {
           }
         });
 
+      }
+    });
+  }
+
+  void startRefresh(MessagesActivityViewModel viewModel) {
+    viewModel.setLoadingStatus(LoadingStatusEnum.LOADING);
+
+    viewModel.loadNewestMessages().observe(this, stringThrowableResponseWithError -> {
+      if (stringThrowableResponseWithError != null) {
+        if (stringThrowableResponseWithError.getData() == null && getView() != null) {
+          viewModel.setLoadingStatus(LoadingStatusEnum.DONE);
+        }
       }
     });
   }

@@ -88,9 +88,9 @@ public class MessagesActivity extends BaseActivity {
 
         if (messagesFragment == null) { //Temporarily do nothing if fragment already loaded.
           fm.add(R.id.messages_activity_fragholder, MainMessagesFragment.newInstance(), "messagesFrag");
-        } //else {
-//          fm.replace(R.id.messages_activity_fragholder, MainMessagesFragment.newInstance(), "messagesFrag");
-//        }
+        } else {
+          fm.replace(R.id.messages_activity_fragholder, MainMessagesFragment.newInstance(), "messagesFrag");
+        }
         fm.commit();
       }
     });

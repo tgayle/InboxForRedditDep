@@ -9,6 +9,7 @@ import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 import app.endershrooms.inboxforreddit3.models.reddit.Message;
+import io.reactivex.Single;
 import java.util.List;
 
 /**
@@ -66,6 +67,9 @@ public interface MessageDao {
 
   @Query(SELECT_NEWEST_MESSAGE_FOR_ACCOUNT)
   public LiveData<Message> getNewestMessageInDatabase(String account);
+
+  @Query(SELECT_NEWEST_MESSAGE_FOR_ACCOUNT)
+  public Single<Message> getNewestMessageInDatabaseAsSingle(String account);
 
   @Query(SELECT_FIRST_MESSAGE_FOR_ACCOUNT)
   public Message getFirstMessage(String account);

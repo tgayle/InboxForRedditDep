@@ -10,7 +10,7 @@ import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 /**
  * Created by Travis on 3/23/2018.
  */
-@Database(entities = {RedditAccount.class, Message.class}, version = 2)
+@Database(entities = {RedditAccount.class, Message.class}, version = 3)
 public abstract class AppDatabase extends RoomDatabase{
   public abstract AccountDao accounts();
   public abstract MessageDao messages();

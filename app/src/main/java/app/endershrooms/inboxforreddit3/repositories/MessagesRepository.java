@@ -11,6 +11,7 @@ import app.endershrooms.inboxforreddit3.models.reddit.Message;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import app.endershrooms.inboxforreddit3.models.reddit.ResponseWithError;
 import app.endershrooms.inboxforreddit3.net.APIManager;
+import io.reactivex.schedulers.Schedulers;
 import java.util.List;
 
 /**
@@ -37,19 +38,34 @@ public class MessagesRepository {
     //TODO: finish loading newest messages and make sure to update changes to old messages by checking currently unread messages
     MutableLiveData<ResponseWithError<String, Throwable>> result = new MutableLiveData<>();
     ResponseWithError<String, Throwable> response = new ResponseWithError<>(null, null);
-    Message newestMsg = messageDao.getNewestMessageInDatabase(user.getUsername()).getValue();
-    //Get newest message
-    Log.d("MessageRepo", "Init newest message is " + (newestMsg == null ? newestMsg : newestMsg.getMessageName()));
-    String nameToStartFrom = newestMsg == null ? "" : newestMsg.getMessageName();
-    APIManager.get().downloadAllFutureMessagesAllLocations(user, 20, nameToStartFrom,
-        (beforeOrAfter, after, messagesLoaded) -> {
-          response.setData(after);
-          result.postValue(response);
-          Log.d("MessageRepo", "Load newest message after is " + after);
-        }, throwable -> {
-          response.setError(throwable);
-          result.postValue(response);
+//    Message newestMsg = messageDao.getNewestMessageInDatabase(user.getUsername()).getValue();
+    messageDao.getNewestMessageInDatabaseAsSingle(user.getUsername())
+        .subscribeOn(Schedulers.io())
+        .subscribe(newestMsg -> {
+          Log.d("MessageRepo", "Init newest message is " + (newestMsg == null ? newestMsg : newestMsg.getMessageName()));
+          String nameToStartFrom = newestMsg == null ? "" : newestMsg.getMessageName();
+          APIManager.get().downloadAllFutureMessagesAllLocations(user, 20, nameToStartFrom,
+              (beforeOrAfter, after, messagesLoaded) -> {
+                response.setData(after);
+                result.postValue(response);
+                Log.d("MessageRepo", "Load newest message " + beforeOrAfter +" is " + after);
+              }, throwable -> {
+                response.setError(throwable);
+                result.postValue(response);
+              });
+        }, err -> { //load even if there is an error?
+          APIManager.get().downloadAllFutureMessagesAllLocations(user, 20, null,
+              (beforeOrAfter, after, messagesLoaded) -> {
+                response.setData(after);
+                result.postValue(response);
+                Log.d("MessageRepo", "Load newest message " + beforeOrAfter +" is " + after);
+              }, throwable -> {
+                response.setError(throwable);
+                result.postValue(response);
+              });
         });
+    //Get newest message
+
     return result;
   }
 

@@ -99,9 +99,9 @@ public class APIManager {
       }, errorListener);
   }
 
-  public void downloadAllFutureMessagesAllLocations(RedditAccount user, int limit, String beforeAfter, OnCompleteMessageLoad onCompleteMessageLoad, OnRedditApiError errorListener) {
-    downloadAllFutureMessages(user, "inbox", limit, beforeAfter, onCompleteMessageLoad, errorListener);
-    downloadAllFutureMessages(user, "sent", limit, beforeAfter, onCompleteMessageLoad, errorListener);
+  public void downloadAllFutureMessagesAllLocations(RedditAccount user, int limit, String before, OnCompleteMessageLoad onCompleteMessageLoad, OnRedditApiError errorListener) {
+    downloadAllFutureMessages(user, "inbox", limit, before, onCompleteMessageLoad, errorListener);
+    downloadAllFutureMessages(user, "sent", limit, before, onCompleteMessageLoad, errorListener);
     downloadUnreadMessages(user, limit, null, onCompleteMessageLoad, errorListener);
   }
 
