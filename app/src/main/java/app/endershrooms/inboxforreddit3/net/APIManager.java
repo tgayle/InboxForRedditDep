@@ -92,10 +92,13 @@ public class APIManager {
     BeforeAfterMessageHolder mostRecentAfter = new BeforeAfterMessageHolder(after);
     AtomicInteger mostRecentNumLoaded = new AtomicInteger();
     downloadMessages(user, "unread", limit, "after", after, (beforeOrAfter, newAfter, messagesLoaded) -> {
-        downloadUnreadMessages(user, limit, newAfter, onCompleteMessageLoad, errorListener);
-        //System.out.println("Downloading all unread messages recursed. Count is " + (messagesLoaded) + " and newest after loaded is " + newAfter);
-        mostRecentAfter.setCurrent(newAfter);
-        mostRecentNumLoaded.set(messagesLoaded);
+        if (newAfter != null) {
+          downloadUnreadMessages(user, limit, newAfter, onCompleteMessageLoad, errorListener);
+          mostRecentAfter.setCurrent(newAfter);
+          mostRecentNumLoaded.set(messagesLoaded);
+        } else {
+          onCompleteMessageLoad.onComplete(beforeOrAfter, mostRecentAfter.current, mostRecentNumLoaded.get());
+        }
       }, errorListener);
   }
 

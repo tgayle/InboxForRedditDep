@@ -78,6 +78,10 @@ public class MainMessagesFragment extends Fragment {
           startRefresh(viewModel);
         });
 
+        viewModel.getMessagesForConversationView().observe(MainMessagesFragment.this, conversations -> {
+          messageConversationAdapter.submitList(conversations);
+        });
+
         if (redditAccount.getAccountIsNew()) { //Load all messages if new
           LiveData<ResponseWithError<String, Throwable>> messagesStatus = viewModel.loadAllMessages();
           viewModel.setAccountIsNew(false);
@@ -102,10 +106,6 @@ public class MainMessagesFragment extends Fragment {
         } else {
           startRefresh(viewModel);
         }
-
-        viewModel.getMessagesForConversationView().observe(MainMessagesFragment.this, conversations -> {
-          messageConversationAdapter.submitList(conversations);
-        });
 
         Snackbar errorSnack = Snackbar.make(snackbarView,
             "There was an issue...", Snackbar.LENGTH_INDEFINITE);
@@ -132,7 +132,6 @@ public class MainMessagesFragment extends Fragment {
             }
           }
         });
-
       }
     });
   }

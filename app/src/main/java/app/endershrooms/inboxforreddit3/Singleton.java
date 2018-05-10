@@ -2,13 +2,10 @@ package app.endershrooms.inboxforreddit3;
 
 import android.arch.persistence.room.Room;
 import android.content.Context;
-import android.util.Log;
 import app.endershrooms.inboxforreddit3.database.AppDatabase;
 import app.endershrooms.inboxforreddit3.net.RedditEndpoint;
 import io.reactivex.schedulers.Schedulers;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map.Entry;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -61,18 +58,18 @@ public class Singleton {
           final Request original = chain.request();
           final HttpUrl originalHttpUrl = original.url();
           final Response response = chain.proceed(original);
-          Log.v("ClientWork", originalHttpUrl.toString());
-          for (Entry<String, List<String>> stringListEntry : original.headers().toMultimap()
-              .entrySet()) {
-            Log.v("ClientWork", String.format("%s -> %s", stringListEntry.getKey(), stringListEntry.getValue()));
-          }
+//          Log.v("HTTPRequest", originalHttpUrl.toString());
+//          for (Entry<String, List<String>> stringListEntry : original.headers().toMultimap()
+//              .entrySet()) {
+//            Log.v("ClientWork", String.format("%s -> %s", stringListEntry.getKey(), stringListEntry.getValue()));
+//          }
 //              Log.v("ClientWork", original.body().toString());
 //              Log.v("ClientWork", response.body().string());
 //              Log.v("ClientWork", response.code() + "");
           return response;
         }
       };
-//          builder.addInterceptor(interceptor)
+//      builder.addInterceptor(interceptor);
       client = builder.build();
     }
     return client;

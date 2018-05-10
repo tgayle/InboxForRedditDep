@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.util.DiffUtil.ItemCallback;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -99,12 +98,10 @@ public class AccountsListAdapter extends PagedListAdapter<RedditAccount, ViewHol
 
       this.parentView.setOnClickListener(view -> {
         accountListInteraction.onAccountSelected(acc);
-        Log.d("AccountsListAdapter", "Account selected " + acc.getUsername());
       });
 
       this.removeBtn.setOnClickListener(view -> {
         accountListInteraction.onAccountRemoved(acc);
-        Log.v("AccountsListAdapter", acc.getUsername());
       });
     }
 
