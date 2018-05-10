@@ -164,6 +164,7 @@ public class MainMessagesFragment extends Fragment {
     //TODO: Message notifications
     //TODO: Viewing images and webpages in here.
     //TODO: Revoke token on account remove.
+    //TODO: Get new client id for security reasons.
 
     return inflater.inflate(R.layout.activity_messages_fragment, container,false);
   }
