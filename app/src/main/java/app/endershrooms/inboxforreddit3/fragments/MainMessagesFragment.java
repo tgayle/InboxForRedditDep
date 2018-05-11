@@ -9,7 +9,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +20,7 @@ import app.endershrooms.inboxforreddit3.adapters.MessagesConversationRecyclerVie
 import app.endershrooms.inboxforreddit3.models.reddit.ResponseWithError;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel.LoadingStatusEnum;
+import app.endershrooms.inboxforreddit3.views.CustomLinearLayoutManager;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -58,9 +58,12 @@ public class MainMessagesFragment extends Fragment {
     super.onActivityCreated(savedInstanceState);
     MessagesActivityViewModel viewModel = ViewModelProviders.of(getActivity()).get(MessagesActivityViewModel.class);
     messageRv = (RecyclerView) getView().findViewById(R.id.message_rv);
-    messageRv.setLayoutManager(new LinearLayoutManager(getContext()));
-    ((LinearLayoutManager) messageRv.getLayoutManager()).setReverseLayout(true);
-    ((LinearLayoutManager) messageRv.getLayoutManager()).setStackFromEnd(true);
+
+    CustomLinearLayoutManager linearLayoutManager = new CustomLinearLayoutManager(getContext());
+    messageRv.setLayoutManager(linearLayoutManager);
+    linearLayoutManager.setReverseLayout(true);
+    linearLayoutManager.setStackFromEnd(true);
+
     messageConversationAdapter = new MessagesConversationRecyclerViewAdapter(); //reset adapter
     messageRv.setAdapter(messageConversationAdapter);
 
@@ -80,6 +83,10 @@ public class MainMessagesFragment extends Fragment {
 
         viewModel.getMessagesForConversationView().observe(MainMessagesFragment.this, conversations -> {
           messageConversationAdapter.submitList(conversations);
+          //Scroll to top when we update the list.
+          if (messageConversationAdapter.getItemCount() != 0) {
+            messageRv.scrollToPosition(messageConversationAdapter.getItemCount() - 1);
+          }
         });
 
         if (redditAccount.getAccountIsNew()) { //Load all messages if new
@@ -161,10 +168,10 @@ public class MainMessagesFragment extends Fragment {
 
     //TODO: Expand and view conversation
     //TODO: Replying to messages
+    //TODO: Marking messages as read on open or reply
     //TODO: Message notifications
     //TODO: Viewing images and webpages in here.
     //TODO: Revoke token on account remove.
-    //TODO: Get new client id for security reasons.
 
     return inflater.inflate(R.layout.activity_messages_fragment, container,false);
   }

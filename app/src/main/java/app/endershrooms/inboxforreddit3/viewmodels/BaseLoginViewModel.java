@@ -1,5 +1,6 @@
 package app.endershrooms.inboxforreddit3.viewmodels;
 
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
@@ -109,6 +110,7 @@ public abstract class BaseLoginViewModel extends AndroidViewModel {
     return response;
   }
 
+  @SuppressLint("CheckResult")
   private void handleLogin(String code) {
     Singleton.get().getRedditApi().getAccessTokenFromCode(Authentication.authorizationHeader, new Authentication.Params.NewTokenParams(code))
         .observeOn(AndroidSchedulers.mainThread())

@@ -1,5 +1,5 @@
 <resources>
-  <string name="app_name">InboxForReddit3</string>
+  <string name="app_name">Inbox For Reddit</string>
 
   <string name="hello_blank_fragment">Hello blank fragment</string>
   <string name="login_get_accesstoken_success">Success getting access token!</string>
@@ -7,7 +7,6 @@
   <string name="login_complete_hello_user">Hello %s!</string>
   <string name="drawer_open">Open</string>
   <string name="drawer_close">Close</string>
-  <string name="title_activity_tempactivity">tempactivity</string>
 
   <string name="navigation_drawer_open">Open navigation drawer</string>
   <string name="navigation_drawer_close">Close navigation drawer</string>
