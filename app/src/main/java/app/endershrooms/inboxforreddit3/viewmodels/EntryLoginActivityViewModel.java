@@ -6,7 +6,6 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import app.endershrooms.inboxforreddit3.Constants;
-import app.endershrooms.inboxforreddit3.Singleton;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import app.endershrooms.inboxforreddit3.repositories.UserRepository;
 import java.util.List;
@@ -25,7 +24,6 @@ public class EntryLoginActivityViewModel extends BaseLoginViewModel {
 
   public EntryLoginActivityViewModel(@NonNull Application application) {
     super(application);
-    Singleton.get().prepareDatabase(getApplication().getApplicationContext());
     sharedPreferences = getApplication().getSharedPreferences(Constants.SHARED_PREFERENCES_MAIN,
         Context.MODE_PRIVATE);
 

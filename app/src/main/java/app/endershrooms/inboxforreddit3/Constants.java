@@ -8,7 +8,7 @@ import android.net.Uri;
 
 public class Constants {
 
-  public static final String CLIENT_ID = "**Removed_Key**";
+  public static final String CLIENT_ID = "IofnW6Q5cc4ybg";
   public static final String OAUTH_REDIRECT_URI = "http://www.google.com";
   public static final String BASE_REDDIT_OAUTH = "https://oauth.reddit.com";
 
