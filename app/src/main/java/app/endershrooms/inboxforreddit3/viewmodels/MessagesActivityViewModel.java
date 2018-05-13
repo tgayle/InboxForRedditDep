@@ -5,6 +5,7 @@ import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.Transformations;
 import android.arch.paging.PagedList;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -26,9 +27,14 @@ import java.util.List;
 public class MessagesActivityViewModel extends AndroidViewModel {
   private UserRepository userRepo = UserRepository.get();
   private MessagesRepository messageRepo = MessagesRepository.get();
-  private MutableLiveData<RedditAccount> currentAccount = new MutableLiveData<>();
-  private MutableLiveData<ResponseWithError<LoadingStatusEnum, String>> loadingStatus = new MutableLiveData<>();
   private MutableLiveData<String> currentUserName = new MutableLiveData<>();
+  private LiveData<RedditAccount> currentAccount = Transformations.switchMap(currentUserName, username -> {
+    return userRepo.getAccount(username);
+  });
+
+  private MutableLiveData<ResponseWithError<LoadingStatusEnum, String>> loadingStatus = new MutableLiveData<>();
+  //TODO: Single livedata for messages in here instead of getting a new one every time
+
   private SharedPreferences sharedPreferences;
 
   public MessagesActivityViewModel(@NonNull Application application) {
@@ -45,11 +51,6 @@ public class MessagesActivityViewModel extends AndroidViewModel {
     String sharedPrefName = userName.equals(Constants.USER_REMOVED) ? null : userName;
     sharedPreferences.edit().putString(Constants.SHARED_PREFS_CURRENT_ACC, sharedPrefName).apply();
     currentUserName.setValue(userName);
-  }
-
-  public void setCurrentAccount(RedditAccount account) {
-    Log.d("MessagesActivityViewMod", "Current account set to " + (account == null ? account : account.getUsername()));
-    currentAccount.setValue(account);
   }
 
   public void initAccountSwitch(RedditAccount user) {

@@ -9,6 +9,7 @@ public class CustomLinearLayoutManager extends LinearLayoutManager {
 
   public CustomLinearLayoutManager(Context context) {
     super(context);
+    this.scrollEnabled = true;
   }
 
   public CustomLinearLayoutManager(Context context, boolean scrollingEnabled) {

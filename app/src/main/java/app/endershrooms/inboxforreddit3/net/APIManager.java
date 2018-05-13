@@ -110,6 +110,8 @@ public class APIManager {
   public void downloadAllPastMessagesAllLocations(RedditAccount user, int limit, OnCompleteMessageLoad onCompleteMessageLoad, OnRedditApiError errorListener) {
     downloadAllPastMessages(user, "inbox", limit, "", onCompleteMessageLoad, errorListener);
     downloadAllPastMessages(user, "sent", limit, "", onCompleteMessageLoad, errorListener);
+
+
   }
 
   private void downloadAllFutureMessages(RedditAccount user, String where, int limit, String before, OnCompleteMessageLoad onCompleteMessageLoad, OnRedditApiError errorListener) {

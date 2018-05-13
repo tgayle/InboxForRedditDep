@@ -62,21 +62,12 @@ public class MessagesActivity extends BaseActivity {
 
     model.getCurrentUserName().observe(this, name -> {
         if (name != null) {
-          if (!name.equals(Constants.USER_REMOVED)) {
-            model.getAccount(name).observe(this, account -> {
-              if (account != null) {
-                RedditAccount liveDataCurrentAccount = model.getCurrentAccount().getValue();
-                if (liveDataCurrentAccount == null || !liveDataCurrentAccount.equals(account)) {
-                  model.setCurrentAccount(account);
-                }
-              }
-            });
-          } else {
+          if (name.equals(Constants.USER_REMOVED)) {
             finish();
             Intent goBackToLogin = new Intent(this, EntryLoginActivity.class);
             startActivity(goBackToLogin);
           }
-      }
+        }
     });
 
     model.getCurrentAccount().observe(this, currentAccount -> {

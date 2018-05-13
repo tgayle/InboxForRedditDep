@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.adapters.MessagesConversationRecyclerViewAdapter;
+import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import app.endershrooms.inboxforreddit3.models.reddit.ResponseWithError;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel.LoadingStatusEnum;
@@ -57,13 +58,13 @@ public class MainMessagesFragment extends Fragment {
   public void onActivityCreated(@Nullable Bundle savedInstanceState) {
     super.onActivityCreated(savedInstanceState);
     MessagesActivityViewModel viewModel = ViewModelProviders.of(getActivity()).get(MessagesActivityViewModel.class);
+    RedditAccount currentAccount = viewModel.getCurrentAccount().getValue();
     messageRv = (RecyclerView) getView().findViewById(R.id.message_rv);
 
     CustomLinearLayoutManager linearLayoutManager = new CustomLinearLayoutManager(getContext());
     messageRv.setLayoutManager(linearLayoutManager);
     linearLayoutManager.setReverseLayout(true);
     linearLayoutManager.setStackFromEnd(true);
-
     messageConversationAdapter = new MessagesConversationRecyclerViewAdapter(); //reset adapter
     messageRv.setAdapter(messageConversationAdapter);
 
@@ -72,73 +73,70 @@ public class MainMessagesFragment extends Fragment {
 
     TextView userTv = (TextView) getView().findViewById(R.id.username_tv);
 
-    viewModel.getCurrentAccount().observe(this, redditAccount -> {
-      if (redditAccount != null) {
-        userTv.setText(String.format(getString(R.string.login_complete_welcome_user), redditAccount.getUsername()));
-        Log.d("Messages Fragment", redditAccount.getUsername() + " account is " + ((redditAccount.getAccountIsNew()) ? "new" : "not new"));
+    userTv.setText(String.format(getString(R.string.login_complete_welcome_user), currentAccount.getUsername()));
+    Log.d("Messages Fragment", currentAccount.getUsername() + " account is " + ((currentAccount.getAccountIsNew()) ? "new" : "not new"));
 
-        swipeRefreshLayout.setOnRefreshListener(() -> {
-          startRefresh(viewModel);
-        });
+    swipeRefreshLayout.setOnRefreshListener(() -> {
+      startRefresh(viewModel);
+    });
 
-        viewModel.getMessagesForConversationView().observe(MainMessagesFragment.this, conversations -> {
-          messageConversationAdapter.submitList(conversations);
-          //Scroll to top when we update the list.
-          if (messageConversationAdapter.getItemCount() != 0) {
-            messageRv.scrollToPosition(messageConversationAdapter.getItemCount() - 1);
-          }
-        });
-
-        if (redditAccount.getAccountIsNew()) { //Load all messages if new
-          LiveData<ResponseWithError<String, Throwable>> messagesStatus = viewModel.loadAllMessages();
-          viewModel.setAccountIsNew(false);
-          Snackbar loading = Snackbar.make(snackbarView, "Loading...", Snackbar.LENGTH_INDEFINITE);
-          loading.show();
-          messagesStatus.observe(this, response -> {
-            if (response != null) {
-              if (response.getError() == null) {
-                String afterResult = response.getData();
-                String text = "After is " + afterResult;
-                loading.setText(text);
-                Log.d("MessagesFragment", text);
-                if (afterResult == null) {
-                  loading.dismiss();
-                  viewModel.setLoadingStatus(LoadingStatusEnum.DONE);
-                }
-              } else {
-                viewModel.setLoadingStatus(LoadingStatusEnum.ERROR, response.getError());
-              }
+    viewModel.getMessagesForConversationView().observe(MainMessagesFragment.this, conversations -> {
+      messageConversationAdapter.submitList(conversations);
+      //Scroll to top when we update the list.
+      if (messageConversationAdapter.getItemCount() != 0) {
+        messageRv.scrollToPosition(messageConversationAdapter.getItemCount() - 1);
+      }
+    });
+    Snackbar loading = Snackbar.make(snackbarView, "Loading...", Snackbar.LENGTH_INDEFINITE);
+    if (currentAccount.getAccountIsNew()) { //Load all messages if new
+      LiveData<ResponseWithError<String, Throwable>> messagesStatus = viewModel.loadAllMessages();
+      viewModel.setAccountIsNew(false);
+      loading.show();
+      messagesStatus.observe(this, response -> {
+        if (response != null) {
+          if (response.getError() == null) {
+            String afterResult = response.getData();
+            String text = "After is " + afterResult;
+            loading.setText(text);
+            Log.d("MessagesFragment", text);
+            if (afterResult == null) {
+              loading.dismiss();
+              viewModel.setLoadingStatus(LoadingStatusEnum.DONE);
             }
-          });
-        } else {
-          startRefresh(viewModel);
+          } else {
+            viewModel.setLoadingStatus(LoadingStatusEnum.ERROR, response.getError());
+          }
         }
+      });
+    } else {
+      startRefresh(viewModel);
+    }
 
-        Snackbar errorSnack = Snackbar.make(snackbarView,
-            "There was an issue...", Snackbar.LENGTH_INDEFINITE);
+    Snackbar errorSnack = Snackbar.make(snackbarView,
+        "There was an issue...", Snackbar.LENGTH_INDEFINITE);
 
-        viewModel.getLoadingStatus().observe(this, newStatus -> {
-          if (newStatus != null) {
-            errorSnack.setAction(null, null); //reset in case it changed
-            switch (newStatus.getData()) {
-              case LOADING:
-                swipeRefreshLayout.setRefreshing(true);
-                errorSnack.dismiss();
-                break;
-              case ERROR:
-                swipeRefreshLayout.setRefreshing(false);
-                errorSnack.setAction("View", view -> {
-                  createAlertDialog(newStatus.getError()).show();
-                });
-                errorSnack.show();
-                break;
-              case DONE:
-                swipeRefreshLayout.setRefreshing(false);
-                errorSnack.dismiss();
-                break;
-            }
-          }
-        });
+    viewModel.getLoadingStatus().observe(this, newStatus -> {
+      if (newStatus != null) {
+        errorSnack.setAction(null, null); //reset in case it changed
+        switch (newStatus.getData()) {
+          case LOADING:
+            swipeRefreshLayout.setRefreshing(true);
+            errorSnack.dismiss();
+            break;
+          case ERROR:
+            swipeRefreshLayout.setRefreshing(false);
+            errorSnack.setAction("View", view -> {
+              createAlertDialog(newStatus.getError()).show();
+            });
+            loading.dismiss();
+            errorSnack.show();
+            break;
+          case DONE:
+            swipeRefreshLayout.setRefreshing(false);
+            errorSnack.dismiss();
+            loading.dismiss();
+            break;
+        }
       }
     });
   }
