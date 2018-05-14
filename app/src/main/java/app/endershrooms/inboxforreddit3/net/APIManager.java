@@ -2,7 +2,9 @@ package app.endershrooms.inboxforreddit3.net;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
+import android.annotation.SuppressLint;
 import android.support.annotation.StringDef;
+import android.util.Log;
 import app.endershrooms.inboxforreddit3.Singleton;
 import app.endershrooms.inboxforreddit3.account.Authentication;
 import app.endershrooms.inboxforreddit3.account.Token.AccessToken;
@@ -29,6 +31,7 @@ public class APIManager {
     return apiManager;
   }
 
+  @SuppressLint("CheckResult")
   private void updateUserToken(RedditAccount user, OnCompleteInterface listener, OnRedditApiError errListener) {
     if (user.getAccessToken() != null && !user.getAccessToken().isTokenExpired()) {
       //Log.v("Token work", "No need to update token for " +user.getUsername());
@@ -76,13 +79,13 @@ public class APIManager {
     AtomicInteger mostRecentNumLoaded = new AtomicInteger();
 
     downloadMessages(user, where, limit, "after", after, (beforeOrAfter, newAfter, messagesLoaded) -> {
-      if (after != null) {
+      if (newAfter != null && !newAfter.equals("null")) {
         downloadAllPastMessages(user, where, limit, newAfter, onCompleteInterface, errorListener);
-        //System.out.println("Downloading all past messages recursed. Count is " + (messagesLoaded) + " and newest after loaded is " + newAfter);
         mostRecentAfter.setCurrent(newAfter);
         mostRecentNumLoaded.set(messagesLoaded);
       } else {
-        onCompleteInterface.onComplete(beforeOrAfter, mostRecentAfter.current, mostRecentNumLoaded.get());
+        Log.d("DownloadMessages", "Finished load? " + newAfter);
+        onCompleteInterface.onComplete(beforeOrAfter, newAfter, mostRecentNumLoaded.get());
       }
     }, errorListener);
   }
@@ -108,10 +111,24 @@ public class APIManager {
   }
 
   public void downloadAllPastMessagesAllLocations(RedditAccount user, int limit, OnCompleteMessageLoad onCompleteMessageLoad, OnRedditApiError errorListener) {
-    downloadAllPastMessages(user, "inbox", limit, "", onCompleteMessageLoad, errorListener);
-    downloadAllPastMessages(user, "sent", limit, "", onCompleteMessageLoad, errorListener);
+    OnCompleteMessageLoad collector = completeLoadCollector(2, onCompleteMessageLoad);
+    downloadAllPastMessages(user, "inbox", limit, null, collector, errorListener);
+    downloadAllPastMessages(user, "sent", limit, null, collector, errorListener);
+  }
 
-
+  private OnCompleteMessageLoad completeLoadCollector(int numExpectedToFinish, OnCompleteMessageLoad finalCaller) {
+    AtomicInteger numFinished = new AtomicInteger(0);
+    return new OnCompleteMessageLoad() {
+      @Override
+      public void onComplete(String beforeOrAfter, String after, int messagesLoaded) {
+        Log.d("Complete Loader", "After called as " + after);
+        if (after == null || after.equals("null")) {
+          if (numFinished.incrementAndGet() == numExpectedToFinish) {
+            finalCaller.onComplete(beforeOrAfter, after, messagesLoaded);
+          }
+        }
+      }
+    };
   }
 
   private void downloadAllFutureMessages(RedditAccount user, String where, int limit, String before, OnCompleteMessageLoad onCompleteMessageLoad, OnRedditApiError errorListener) {

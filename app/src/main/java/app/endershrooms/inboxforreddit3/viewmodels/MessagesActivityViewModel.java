@@ -29,6 +29,7 @@ public class MessagesActivityViewModel extends AndroidViewModel {
   private MessagesRepository messageRepo = MessagesRepository.get();
   private MutableLiveData<String> currentUserName = new MutableLiveData<>();
   private LiveData<RedditAccount> currentAccount = Transformations.switchMap(currentUserName, username -> {
+    Log.d("SwitchMap", "Account switched");
     return userRepo.getAccount(username);
   });
 
@@ -89,7 +90,17 @@ public class MessagesActivityViewModel extends AndroidViewModel {
 
   public LiveData<ResponseWithError<String, Throwable>> loadAllMessages() {
     setLoadingStatus(LoadingStatusEnum.LOADING, null);
-    return messageRepo.loadAllMessages(currentAccount.getValue());
+    LiveData<ResponseWithError<String, Throwable>> result = messageRepo.loadAllMessages(currentAccount.getValue());
+    result.observeForever(new Observer<ResponseWithError<String, Throwable>>() {
+      @Override
+      public void onChanged(@Nullable ResponseWithError<String, Throwable> stringThrowableResponseWithError) {
+        if (stringThrowableResponseWithError.getData() == null) {
+          setLoadingStatus(LoadingStatusEnum.DONE);
+          result.removeObserver(this);
+        }
+      }
+    });
+    return result;
   }
 
   //Unneeded? You can already get newest message per conversation, and you can get all message for conversation for DB?

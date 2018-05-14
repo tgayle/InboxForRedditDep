@@ -78,7 +78,7 @@ public class Singleton {
   private Retrofit getRetrofit() {
     if (retrofit == null) {
       retrofit = new Retrofit.Builder()
-          .baseUrl("https://oauth.reddit.com/")
+          .baseUrl(Constants.BASE_REDDIT_OAUTH)
           .client(client())
           .addConverterFactory(GsonConverterFactory.create())
           .addCallAdapterFactory(rxCallAdapter)

@@ -43,7 +43,6 @@ public class MainMessagesFragment extends Fragment {
     MainMessagesFragment fragment = new MainMessagesFragment();
     Bundle args = new Bundle();
     fragment.setArguments(args);
-    Log.d("MainMessagesFragment", "MainMessagesFragmentStarted");
     return fragment;
   }
 
@@ -76,6 +75,8 @@ public class MainMessagesFragment extends Fragment {
     userTv.setText(String.format(getString(R.string.login_complete_welcome_user), currentAccount.getUsername()));
     Log.d("Messages Fragment", currentAccount.getUsername() + " account is " + ((currentAccount.getAccountIsNew()) ? "new" : "not new"));
 
+    prepareLoadingStatus(viewModel);
+
     swipeRefreshLayout.setOnRefreshListener(() -> {
       startRefresh(viewModel);
     });
@@ -91,32 +92,34 @@ public class MainMessagesFragment extends Fragment {
     if (currentAccount.getAccountIsNew()) { //Load all messages if new
       LiveData<ResponseWithError<String, Throwable>> messagesStatus = viewModel.loadAllMessages();
       viewModel.setAccountIsNew(false);
-      loading.show();
-      messagesStatus.observe(this, response -> {
-        if (response != null) {
-          if (response.getError() == null) {
-            String afterResult = response.getData();
-            String text = "After is " + afterResult;
-            loading.setText(text);
-            Log.d("MessagesFragment", text);
-            if (afterResult == null) {
-              loading.dismiss();
-              viewModel.setLoadingStatus(LoadingStatusEnum.DONE);
-            }
-          } else {
-            viewModel.setLoadingStatus(LoadingStatusEnum.ERROR, response.getError());
-          }
-        }
-      });
     } else {
-      startRefresh(viewModel);
+      ResponseWithError<LoadingStatusEnum, String> currentStatus = viewModel.getLoadingStatus().getValue();
+      if (currentStatus != null && currentStatus.getData() != LoadingStatusEnum.LOADING) {
+        startRefresh(viewModel);
+      }
     }
+  }
 
-    Snackbar errorSnack = Snackbar.make(snackbarView,
+  void startRefresh(MessagesActivityViewModel viewModel) {
+    viewModel.setLoadingStatus(LoadingStatusEnum.LOADING);
+
+    viewModel.loadNewestMessages().observe(this, stringThrowableResponseWithError -> {
+      if (stringThrowableResponseWithError != null) {
+        if (stringThrowableResponseWithError.getData() == null && getView() != null) {
+          Log.d("LoadingStatus", "LoadNewest is " + stringThrowableResponseWithError.getData());
+          viewModel.setLoadingStatus(LoadingStatusEnum.DONE);
+        }
+      }
+    });
+  }
+
+  void prepareLoadingStatus(MessagesActivityViewModel viewModel) {
+    Snackbar errorSnack = Snackbar.make( getActivity().findViewById(R.id.messages_activity_fragholder),
         "There was an issue...", Snackbar.LENGTH_INDEFINITE);
 
     viewModel.getLoadingStatus().observe(this, newStatus -> {
       if (newStatus != null) {
+        Log.d("LoadingStatus", "Current status is " + newStatus.getData());
         errorSnack.setAction(null, null); //reset in case it changed
         switch (newStatus.getData()) {
           case LOADING:
@@ -128,26 +131,14 @@ public class MainMessagesFragment extends Fragment {
             errorSnack.setAction("View", view -> {
               createAlertDialog(newStatus.getError()).show();
             });
-            loading.dismiss();
+//            loading.dismiss();
             errorSnack.show();
             break;
           case DONE:
             swipeRefreshLayout.setRefreshing(false);
             errorSnack.dismiss();
-            loading.dismiss();
+//            loading.dismiss();
             break;
-        }
-      }
-    });
-  }
-
-  void startRefresh(MessagesActivityViewModel viewModel) {
-    viewModel.setLoadingStatus(LoadingStatusEnum.LOADING);
-
-    viewModel.loadNewestMessages().observe(this, stringThrowableResponseWithError -> {
-      if (stringThrowableResponseWithError != null) {
-        if (stringThrowableResponseWithError.getData() == null && getView() != null) {
-          viewModel.setLoadingStatus(LoadingStatusEnum.DONE);
         }
       }
     });

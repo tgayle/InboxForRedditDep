@@ -1,5 +1,6 @@
 package app.endershrooms.inboxforreddit3.repositories;
 
+import android.annotation.SuppressLint;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.paging.LivePagedListBuilder;
@@ -34,6 +35,7 @@ public class MessagesRepository {
     return new LivePagedListBuilder<>(messageDao.getNewestMessageForAllConversationsForUserPagable(user.getUsername()), 10).build();
   }
 
+  @SuppressLint("CheckResult")
   public LiveData<ResponseWithError<String, Throwable>> loadNewestMessages(RedditAccount user) {
     MutableLiveData<ResponseWithError<String, Throwable>> result = new MutableLiveData<>();
     ResponseWithError<String, Throwable> response = new ResponseWithError<>(null, null);
@@ -47,7 +49,7 @@ public class MessagesRepository {
               (beforeOrAfter, after, messagesLoaded) -> {
                 response.setData(after);
                 result.postValue(response);
-                Log.d("MessageRepo", "Load newest message " + beforeOrAfter +" is " + after);
+//                Log.d("MessageRepo", "Load newest message " + beforeOrAfter +" is " + after);
               }, throwable -> {
                 response.setError(throwable);
                 result.postValue(response);
@@ -57,7 +59,7 @@ public class MessagesRepository {
               (beforeOrAfter, after, messagesLoaded) -> {
                 response.setData(after);
                 result.postValue(response);
-                Log.d("MessageRepo", "Load newest message " + beforeOrAfter +" is " + after);
+//                Log.d("MessageRepo", "Load newest message " + beforeOrAfter +" is " + after);
               }, throwable -> {
                 response.setError(throwable);
                 result.postValue(response);
