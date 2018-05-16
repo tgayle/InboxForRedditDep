@@ -16,7 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import app.endershrooms.inboxforreddit3.R;
-import app.endershrooms.inboxforreddit3.adapters.MessagesConversationRecyclerViewAdapter;
+import app.endershrooms.inboxforreddit3.adapters.ConversationPreviewAdapter;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import app.endershrooms.inboxforreddit3.models.reddit.ResponseWithError;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel;
@@ -31,7 +31,7 @@ import app.endershrooms.inboxforreddit3.views.CustomLinearLayoutManager;
 public class MainMessagesFragment extends Fragment {
 
 
-  MessagesConversationRecyclerViewAdapter messageConversationAdapter;
+  ConversationPreviewAdapter messageConversationAdapter;
   SwipeRefreshLayout swipeRefreshLayout;
   RecyclerView messageRv;
 
@@ -64,7 +64,8 @@ public class MainMessagesFragment extends Fragment {
     messageRv.setLayoutManager(linearLayoutManager);
     linearLayoutManager.setReverseLayout(true);
     linearLayoutManager.setStackFromEnd(true);
-    messageConversationAdapter = new MessagesConversationRecyclerViewAdapter(); //reset adapter
+    messageConversationAdapter = new ConversationPreviewAdapter(
+        message -> viewModel.setCurrentConversationName(message.getParentMessageName())); //reset adapter
     messageRv.setAdapter(messageConversationAdapter);
 
     swipeRefreshLayout = (SwipeRefreshLayout) getView().findViewById(R.id.activities_messages_swiperefresh);
@@ -118,7 +119,7 @@ public class MainMessagesFragment extends Fragment {
         "There was an issue...", Snackbar.LENGTH_INDEFINITE);
 
     viewModel.getLoadingStatus().observe(this, newStatus -> {
-      if (newStatus != null) {
+      if (getView() != null && newStatus != null) {
         Log.d("LoadingStatus", "Current status is " + newStatus.getData());
         errorSnack.setAction(null, null); //reset in case it changed
         switch (newStatus.getData()) {
@@ -160,7 +161,6 @@ public class MainMessagesFragment extends Fragment {
     //TODO: Marking messages as read on open or reply
     //TODO: Message notifications
     //TODO: Viewing images and webpages in here.
-    //TODO: Revoke token on account remove.
 
     return inflater.inflate(R.layout.activity_messages_fragment, container,false);
   }

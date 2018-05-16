@@ -67,6 +67,9 @@ public interface MessageDao {
   @Query(SELECT_ALL_MESSAGES_FOR_CONVERSATION_FOR_ACCOUNT)
   public LiveData<List<Message>> getAllMessagesFromConversation(String account, String parentname);
 
+  @Query(SELECT_ALL_MESSAGES_FOR_CONVERSATION_FOR_ACCOUNT)
+  public DataSource.Factory<Integer, Message> getAllMessagesFromConversationAsPaged(String account, String parentname);
+
   @Query(SELECT_NEWEST_MESSAGE_FOR_ACCOUNT)
   public LiveData<Message> getNewestMessageInDatabase(String account);
 

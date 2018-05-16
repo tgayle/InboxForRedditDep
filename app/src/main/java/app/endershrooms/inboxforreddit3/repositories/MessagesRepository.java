@@ -106,4 +106,8 @@ public class MessagesRepository {
           Log.d("RemoveMessages", removedAccount.getUsername() + " had " + removed + " messages removed");
         });
   }
+
+  public LiveData<PagedList<Message>> getMessagesForConversationPaged(RedditAccount user, String parentName) {
+    return new LivePagedListBuilder<>(messageDao.getAllMessagesFromConversationAsPaged(user.getUsername(), parentName), 20).build();
+  }
 }

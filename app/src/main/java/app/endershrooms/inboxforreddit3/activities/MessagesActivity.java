@@ -86,6 +86,12 @@ public class MessagesActivity extends BaseActivity {
       }
     });
 
+    model.getCurrentConversationName().observe(this, parent -> {
+      if (parent != null) {
+        //TODO: Display new conversation.
+      }
+    });
+
     drawerExpandAccountsBtn.setOnClickListener(view -> {
       if (drawerAccountSwitcher.getVisibility() == View.GONE) {
         drawerAccountSwitcher.setVisibility(View.VISIBLE);

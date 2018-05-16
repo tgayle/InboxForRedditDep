@@ -33,6 +33,8 @@ public class MessagesActivityViewModel extends AndroidViewModel {
     return userRepo.getAccount(username);
   });
 
+  private MutableLiveData<String> currentConversationName = new MutableLiveData<>();
+
   private MutableLiveData<ResponseWithError<LoadingStatusEnum, String>> loadingStatus = new MutableLiveData<>();
   //TODO: Single livedata for messages in here instead of getting a new one every time
 
@@ -83,6 +85,18 @@ public class MessagesActivityViewModel extends AndroidViewModel {
     return messageRepo.getNewestMessagesPerConversation(currentAccount.getValue());
   }
 
+  public LiveData<PagedList<Message>> getAllConversationMessagesPaged(RedditAccount user, String parentName) {
+    return messageRepo.getMessagesForConversationPaged(user, parentName);
+  }
+
+  public LiveData<String> getCurrentConversationName() {
+    return currentConversationName;
+  }
+
+  public void setCurrentConversationName(String parentName) {
+    currentConversationName.setValue(parentName);
+  }
+
   public LiveData<ResponseWithError<String, Throwable>> loadNewestMessages() {
     Log.d("MessagesViewModel", "Load newest " + (currentAccount.getValue() == null ? currentAccount : currentAccount.getValue().getUsername()));
     return messageRepo.loadNewestMessages(currentAccount.getValue());
@@ -102,8 +116,6 @@ public class MessagesActivityViewModel extends AndroidViewModel {
     });
     return result;
   }
-
-  //Unneeded? You can already get newest message per conversation, and you can get all message for conversation for DB?
 
   public LiveData<ResponseWithError<LoadingStatusEnum, String>> getLoadingStatus() {
     return loadingStatus;
