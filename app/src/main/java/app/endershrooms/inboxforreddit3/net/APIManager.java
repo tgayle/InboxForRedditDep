@@ -41,7 +41,7 @@ public class APIManager {
     }
 
     Singleton
-        .get().getRedditApi().getAccessTokenFromCode(Authentication.authorizationHeader, new Authentication.Params.RefreshParams(user.getRefreshToken()))
+        .get().getRedditApi().getAccessTokenFromCode(Authentication.basicAuthorizationHeader, new Authentication.Params.RefreshParams(user.getRefreshToken()))
         .observeOn(Schedulers.io())
         .subscribe(jsonLoginResponse -> {
           //Log.v("Token work", "Updated token. New results are " + jsonLoginResponse.access_token + " and " + jsonLoginResponse.expires_in);

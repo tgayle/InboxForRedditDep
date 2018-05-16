@@ -4,6 +4,7 @@ import android.arch.lifecycle.LiveData;
 import android.arch.paging.LivePagedListBuilder;
 import android.arch.paging.PagedList;
 import app.endershrooms.inboxforreddit3.Singleton;
+import app.endershrooms.inboxforreddit3.account.Authentication;
 import app.endershrooms.inboxforreddit3.database.dao.AccountDao;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import io.reactivex.Single;
@@ -39,6 +40,10 @@ public class UserRepository {
   public void removeAccount(RedditAccount account) {
     Single.fromCallable(() -> accountDao.removeAccount(account))
         .subscribeOn(Schedulers.io())
+        .subscribe();
+
+    Singleton.get().getRedditApi().revokeUserToken(Authentication.basicAuthorizationHeader, account.getRefreshToken().toString(), "refresh_token")
+        .observeOn(Schedulers.io())
         .subscribe();
   }
 

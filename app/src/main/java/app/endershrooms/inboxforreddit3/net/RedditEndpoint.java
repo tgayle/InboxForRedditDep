@@ -39,6 +39,12 @@ public interface RedditEndpoint {
   @FormUrlEncoded
   @POST("https://www.reddit.com/api/v1/access_token")
   Observable<JSONLoginResponse> getAccessTokenFromCode(
-      @Header("Authorization") String authorization,
+      @Header("Authorization") String basicAuthentication,
       @FieldMap Authentication.Params.AuthParams params);
+
+  @POST("https://www.reddit.com/api/v1/revoke_token")
+  Observable<String> revokeUserToken(
+      @Header("Authorization") String basicAuthentication,
+      @Query("token") String token,
+      @Query("token_type_hint") String tokenType);
 }

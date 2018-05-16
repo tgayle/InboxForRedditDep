@@ -12,7 +12,7 @@ import java.util.HashMap;
 public class Authentication{
 
   public static final String creds = Constants.CLIENT_ID + ":" + "";
-  public static final String authorizationHeader = "Basic " + Base64
+  public static final String basicAuthorizationHeader = "Basic " + Base64
       .encodeToString(creds.getBytes(), Base64.NO_WRAP);
 
   public static class Params {

@@ -112,7 +112,7 @@ public abstract class BaseLoginViewModel extends AndroidViewModel {
 
   @SuppressLint("CheckResult")
   private void handleLogin(String code) {
-    Singleton.get().getRedditApi().getAccessTokenFromCode(Authentication.authorizationHeader, new Authentication.Params.NewTokenParams(code))
+    Singleton.get().getRedditApi().getAccessTokenFromCode(Authentication.basicAuthorizationHeader, new Authentication.Params.NewTokenParams(code))
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(jsonLoginResponse -> {
           Singleton.get().getRedditApi().getMe(RedditAccount.getAuthentication(jsonLoginResponse.access_token))
