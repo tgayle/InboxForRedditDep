@@ -58,6 +58,7 @@ public class MessagesActivityViewModel extends AndroidViewModel {
 
   public void initAccountSwitch(RedditAccount user) {
     setCurrentUsername(user.getUsername());
+    setLoadingStatus(LoadingStatusEnum.DONE);
   }
 
   public LiveData<RedditAccount> getCurrentAccount() {

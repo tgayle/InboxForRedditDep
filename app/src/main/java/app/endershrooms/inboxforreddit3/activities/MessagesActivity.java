@@ -17,6 +17,7 @@ import android.widget.TextView;
 import app.endershrooms.inboxforreddit3.Constants;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.adapters.AccountsListAdapter;
+import app.endershrooms.inboxforreddit3.fragments.ConversationViewFragment;
 import app.endershrooms.inboxforreddit3.fragments.MainMessagesFragment;
 import app.endershrooms.inboxforreddit3.interfaces.OnAccountListInteraction;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
@@ -87,9 +88,20 @@ public class MessagesActivity extends BaseActivity {
     });
 
     model.getCurrentConversationName().observe(this, parent -> {
+      FragmentTransaction transaction = getSupportFragmentManager()
+          .beginTransaction();
+      Fragment conversationFragment = getSupportFragmentManager().findFragmentByTag("conversationFrag");
       if (parent != null) {
         //TODO: Display new conversation.
+
+        transaction.add(R.id.messages_activity_fragholder, ConversationViewFragment.newInstance(), "conversationFrag")
+            .addToBackStack(null);
+      } else {
+        if (conversationFragment != null) {
+          transaction.remove(conversationFragment);
+        }
       }
+      transaction.commit();
     });
 
     drawerExpandAccountsBtn.setOnClickListener(view -> {

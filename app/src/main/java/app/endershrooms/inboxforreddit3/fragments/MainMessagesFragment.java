@@ -40,17 +40,7 @@ public class MainMessagesFragment extends Fragment {
   }
 
   public static MainMessagesFragment newInstance() {
-    MainMessagesFragment fragment = new MainMessagesFragment();
-    Bundle args = new Bundle();
-    fragment.setArguments(args);
-    return fragment;
-  }
-
-  @Override
-  public void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    if (getArguments() != null) {
-    }
+    return new MainMessagesFragment();
   }
 
   @Override
@@ -58,8 +48,8 @@ public class MainMessagesFragment extends Fragment {
     super.onActivityCreated(savedInstanceState);
     MessagesActivityViewModel viewModel = ViewModelProviders.of(getActivity()).get(MessagesActivityViewModel.class);
     RedditAccount currentAccount = viewModel.getCurrentAccount().getValue();
-    messageRv = (RecyclerView) getView().findViewById(R.id.message_rv);
 
+    messageRv = (RecyclerView) getView().findViewById(R.id.message_rv);
     CustomLinearLayoutManager linearLayoutManager = new CustomLinearLayoutManager(getContext());
     messageRv.setLayoutManager(linearLayoutManager);
     linearLayoutManager.setReverseLayout(true);
@@ -70,7 +60,6 @@ public class MainMessagesFragment extends Fragment {
 
     swipeRefreshLayout = (SwipeRefreshLayout) getView().findViewById(R.id.activities_messages_swiperefresh);
     View snackbarView = getActivity().findViewById(R.id.messages_activity_fragholder);
-
     TextView userTv = (TextView) getView().findViewById(R.id.username_tv);
 
     userTv.setText(String.format(getString(R.string.login_complete_welcome_user), currentAccount.getUsername()));

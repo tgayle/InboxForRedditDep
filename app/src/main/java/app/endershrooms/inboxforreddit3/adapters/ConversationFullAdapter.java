@@ -39,6 +39,7 @@ public class ConversationFullAdapter extends PagedListAdapter<Message, Conversat
 
     public ConversationMessageViewHolder(View itemView) {
       super(itemView);
+      messageTv.setEllipsize(null);
     }
 
     @Override

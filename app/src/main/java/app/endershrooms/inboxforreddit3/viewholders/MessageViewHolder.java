@@ -18,20 +18,35 @@ import app.endershrooms.inboxforreddit3.models.reddit.Message;
 
 public abstract class MessageViewHolder extends ViewHolder {
 
-  View parentCardView;
-  TextView subjectTv;
-  TextView usernameTv;
-  TextView dateTv;
-  ImageView sentReceivedIv;
-  TextView messageTv;
+  public View parentCardView;
+  public TextView subjectTv;
+  public TextView usernameTv;
+  public TextView dateTv;
+  public ImageView sentReceivedIv;
+  public TextView messageTv;
 
   public MessageViewHolder(View itemView) {
     super(itemView);
+    parentCardView = itemView.findViewById(R.id.conversation_layout_cardview);
+    subjectTv = (TextView) itemView.findViewById(R.id.conversation_layout_subject);
+    usernameTv = (TextView) itemView.findViewById(R.id.conversation_layout_username);
+    dateTv = (TextView) itemView.findViewById(R.id.conversation_layout_postdate);
+    sentReceivedIv = (ImageView) itemView.findViewById(R.id.conversation_layout_sentreceived);
+    messageTv = (TextView) itemView.findViewById(R.id.conversation_layout_content);
+  }
+
+  public MessageViewHolder(View itemView, int messageMaxLines) {
+    this(itemView);
+    messageTv.setMaxLines(messageMaxLines);
   }
 
   public abstract View.OnClickListener onMessageClick(Message message);
 
   public void bind(Message message) {
+    if (message == null) {
+      hide();
+      return;
+    }
     clear();
     String trimmedMsg = message.getMessageBody().trim();
     this.subjectTv.setText(message.getSubject());
@@ -52,7 +67,6 @@ public abstract class MessageViewHolder extends ViewHolder {
     this.dateTv.setText(MiscFuncs.getRelativeDateTime(message.getTimestamp()));
 
     this.messageTv.setText(trim(Html.fromHtml(noTrailingwhiteLines(trimmedMsg)))); //Not trimming a second time adds weird whitespace?
-    this.messageTv.setMaxLines(2);
     this.parentCardView.setOnClickListener(onMessageClick(message));
   }
 

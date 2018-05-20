@@ -51,7 +51,7 @@ public class ConversationPreviewAdapter extends
   class PreviewViewHolder extends MessageViewHolder {
 
     public PreviewViewHolder(View itemView) {
-      super(itemView);
+      super(itemView, 2);
     }
 
     @Override
