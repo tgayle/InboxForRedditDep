@@ -23,11 +23,6 @@ import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel.LoadingStatusEnum;
 import app.endershrooms.inboxforreddit3.views.CustomLinearLayoutManager;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link MainMessagesFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class MainMessagesFragment extends Fragment {
 
 

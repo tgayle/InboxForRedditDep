@@ -18,7 +18,6 @@ public class EntryLoginActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
-    getSupportActionBar().hide();
     viewPager = (NoSwipeViewPager) findViewById(R.id.vpager);
     viewPager.setPagingEnabled(false);
     vpAdapter = new WelcomeActivityViewPagerAdapter(getSupportFragmentManager());

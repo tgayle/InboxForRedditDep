@@ -8,8 +8,10 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -33,14 +35,20 @@ public class MessagesActivity extends BaseActivity {
   protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_messages_with_drawer);
-    getSupportActionBar().hide();
-    Log.v("############", "###########################");
+
+    Toolbar toolbar = findViewById(R.id.toolbar);
+    setSupportActionBar(toolbar);
+
     ImageButton drawerExpandAccountsBtn = (ImageButton) findViewById(R.id.drawer_expandusers_btn);
     View drawerHeader = findViewById(R.id.main_drawer_navheader);
     final RecyclerView drawerAccountSwitcher = (RecyclerView) findViewById(R.id.activity_messages_drawer_users_list);
     drawerAccountSwitcher.setLayoutManager(new LinearLayoutManager(MessagesActivity.this));
     TextView drawerUsernameTv = findViewById(R.id.main_drawer_navheader_username);
     DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+
+    ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(MessagesActivity.this, drawer, toolbar, R.string.drawer_open, R.string.drawer_close);
+    drawer.addDrawerListener(actionBarDrawerToggle);
+    actionBarDrawerToggle.syncState();
 
     MessagesActivityViewModel model = ViewModelProviders.of(this).get(MessagesActivityViewModel.class);
     accountsListAdapter = new AccountsListAdapter(new OnAccountListInteraction() {
