@@ -63,6 +63,14 @@ public class MainMessagesFragment extends Fragment {
     TextView userTv = (TextView) getView().findViewById(R.id.username_tv);
 
     userTv.setText(String.format(getString(R.string.login_complete_welcome_user), currentAccount.getUsername()));
+    userTv.setOnClickListener(view -> {
+      int topItemPosition = (messageConversationAdapter.getItemCount() - 1 >= 0) ? messageConversationAdapter.getItemCount() - 1 : messageConversationAdapter.getItemCount();
+      if (messageConversationAdapter.getItemCount() - linearLayoutManager.findLastVisibleItemPosition() < 15) {
+        messageRv.smoothScrollToPosition(topItemPosition);
+      } else {
+        messageRv.scrollToPosition(topItemPosition);
+      }
+    });
     Log.d("Messages Fragment", currentAccount.getUsername() + " account is " + ((currentAccount.getAccountIsNew()) ? "new" : "not new"));
 
     prepareLoadingStatus(viewModel);
@@ -95,7 +103,7 @@ public class MainMessagesFragment extends Fragment {
 
     viewModel.loadNewestMessages().observe(this, stringThrowableResponseWithError -> {
       if (stringThrowableResponseWithError != null) {
-        if (stringThrowableResponseWithError.getData() == null && getView() != null) {
+        if ((stringThrowableResponseWithError.getData() == null || stringThrowableResponseWithError.getData().equals("")) && getView() != null) {
           Log.d("LoadingStatus", "LoadNewest is " + stringThrowableResponseWithError.getData());
           viewModel.setLoadingStatus(LoadingStatusEnum.DONE);
         }

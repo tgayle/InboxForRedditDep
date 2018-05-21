@@ -54,16 +54,9 @@ public class MessagesRepository {
                 response.setError(throwable);
                 result.postValue(response);
               });
-        }, err -> { //load even if there is an error?
-          APIManager.get().downloadAllFutureMessagesAllLocations(user, 20, null,
-              (beforeOrAfter, after, messagesLoaded) -> {
-                response.setData(after);
-                result.postValue(response);
-//                Log.d("MessageRepo", "Load newest message " + beforeOrAfter +" is " + after);
-              }, throwable -> {
-                response.setError(throwable);
-                result.postValue(response);
-              });
+        }, err -> {
+          response.setError(err);
+          result.postValue(response);
         });
     //Get newest message
 
