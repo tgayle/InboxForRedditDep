@@ -123,6 +123,10 @@ public class Message {
     this.isNew = is_new;
   }
 
+  public boolean currentUserSentMessage() {
+    return this.getMessageOwner().equals(this.getAuthor());
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof Message) {

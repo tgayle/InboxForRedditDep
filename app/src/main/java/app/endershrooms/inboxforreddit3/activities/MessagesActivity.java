@@ -36,6 +36,7 @@ public class MessagesActivity extends BaseActivity {
     getSupportActionBar().hide();
     Log.v("############", "###########################");
     ImageButton drawerExpandAccountsBtn = (ImageButton) findViewById(R.id.drawer_expandusers_btn);
+    View drawerHeader = findViewById(R.id.main_drawer_navheader);
     final RecyclerView drawerAccountSwitcher = (RecyclerView) findViewById(R.id.activity_messages_drawer_users_list);
     drawerAccountSwitcher.setLayoutManager(new LinearLayoutManager(MessagesActivity.this));
     TextView drawerUsernameTv = findViewById(R.id.main_drawer_navheader_username);
@@ -89,12 +90,12 @@ public class MessagesActivity extends BaseActivity {
 
     model.getCurrentConversationName().observe(this, parent -> {
       FragmentTransaction transaction = getSupportFragmentManager()
-          .beginTransaction();
+          .beginTransaction()
+          .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_right, R.anim.slide_in_right, R.anim.slide_out_right);
       Fragment conversationFragment = getSupportFragmentManager().findFragmentByTag("conversationFrag");
       if (parent != null) {
-        //TODO: Display new conversation.
-
-        transaction.add(R.id.messages_activity_fragholder, ConversationViewFragment.newInstance(), "conversationFrag")
+        transaction
+            .add(R.id.messages_activity_fragholder, ConversationViewFragment.newInstance(), "conversationFrag")
             .addToBackStack(null);
       } else {
         if (conversationFragment != null) {
@@ -104,7 +105,7 @@ public class MessagesActivity extends BaseActivity {
       transaction.commit();
     });
 
-    drawerExpandAccountsBtn.setOnClickListener(view -> {
+    drawerHeader.setOnClickListener(view -> {
       if (drawerAccountSwitcher.getVisibility() == View.GONE) {
         drawerAccountSwitcher.setVisibility(View.VISIBLE);
         drawerExpandAccountsBtn.setRotation(180f);

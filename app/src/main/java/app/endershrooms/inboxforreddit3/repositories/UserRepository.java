@@ -1,8 +1,10 @@
 package app.endershrooms.inboxforreddit3.repositories;
 
+import android.annotation.SuppressLint;
 import android.arch.lifecycle.LiveData;
 import android.arch.paging.LivePagedListBuilder;
 import android.arch.paging.PagedList;
+import android.util.Log;
 import app.endershrooms.inboxforreddit3.Singleton;
 import app.endershrooms.inboxforreddit3.account.Authentication;
 import app.endershrooms.inboxforreddit3.database.dao.AccountDao;
@@ -37,6 +39,7 @@ public class UserRepository {
     return new LivePagedListBuilder<>(accountDao.getAccountsAsPagedList(), 10).build();
   }
 
+  @SuppressLint("CheckResult")
   public void removeAccount(RedditAccount account) {
     Single.fromCallable(() -> accountDao.removeAccount(account))
         .subscribeOn(Schedulers.io())
@@ -44,7 +47,8 @@ public class UserRepository {
 
     Singleton.get().getRedditApi().revokeUserToken(Authentication.basicAuthorizationHeader, account.getRefreshToken().toString(), "refresh_token")
         .observeOn(Schedulers.io())
-        .subscribe();
+        .subscribe(response -> Log.d("RevokeToken", "Successful token revoke " + response),
+            err-> Log.d("RevokeToken", "Issue revoking token: " + err.getMessage()));
   }
 
   public void updateAccount(RedditAccount acc) {

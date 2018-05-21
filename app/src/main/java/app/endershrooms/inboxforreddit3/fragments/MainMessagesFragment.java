@@ -145,7 +145,6 @@ public class MainMessagesFragment extends Fragment {
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
 
-    //TODO: Expand and view conversation
     //TODO: Replying to messages
     //TODO: Marking messages as read on open or reply
     //TODO: Message notifications

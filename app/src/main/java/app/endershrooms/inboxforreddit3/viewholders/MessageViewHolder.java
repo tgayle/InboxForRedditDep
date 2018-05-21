@@ -42,6 +42,14 @@ public abstract class MessageViewHolder extends ViewHolder {
 
   public abstract View.OnClickListener onMessageClick(Message message);
 
+  public String getUsernameTVText(Message message) {
+    if (message.currentUserSentMessage()) {
+      return message.getDestination();
+    } else {
+      return message.getAuthor();
+    }
+  }
+
   public void bind(Message message) {
     if (message == null) {
       hide();
@@ -50,13 +58,13 @@ public abstract class MessageViewHolder extends ViewHolder {
     clear();
     String trimmedMsg = message.getMessageBody().trim();
     this.subjectTv.setText(message.getSubject());
-    if (message.getMessageOwner().equals(message.getAuthor())) {
-      this.usernameTv.setText(message.getDestination());
+
+    if (message.currentUserSentMessage()) {
       this.sentReceivedIv.setRotation(180f); //sent top-right angle
     } else {
-      this.usernameTv.setText(message.getAuthor());
       this.sentReceivedIv.setRotation(0f); //received
     }
+    this.usernameTv.setText(getUsernameTVText(message));
 
     if (message.getNew()) {
       this.usernameTv.setTextColor(ContextCompat.getColor(this.usernameTv.getContext(), R.color.unread_message));

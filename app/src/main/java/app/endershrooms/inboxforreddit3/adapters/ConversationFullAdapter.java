@@ -43,6 +43,11 @@ public class ConversationFullAdapter extends PagedListAdapter<Message, Conversat
     }
 
     @Override
+    public String getUsernameTVText(Message message) {
+      return message.getAuthor();
+    }
+
+    @Override
     public OnClickListener onMessageClick(Message message) {
       return null;
     }

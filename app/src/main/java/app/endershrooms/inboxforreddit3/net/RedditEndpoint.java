@@ -43,7 +43,7 @@ public interface RedditEndpoint {
       @FieldMap Authentication.Params.AuthParams params);
 
   @POST("https://www.reddit.com/api/v1/revoke_token")
-  Observable<String> revokeUserToken(
+  Observable<Void> revokeUserToken(
       @Header("Authorization") String basicAuthentication,
       @Query("token") String token,
       @Query("token_type_hint") String tokenType);

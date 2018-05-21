@@ -110,10 +110,11 @@ public class APIManager {
     downloadUnreadMessages(user, limit, null, onCompleteMessageLoad, errorListener);
   }
 
+  //After must be an empty string instead of null here to make sure progress is properly sent to the rest of the app.
   public void downloadAllPastMessagesAllLocations(RedditAccount user, int limit, OnCompleteMessageLoad onCompleteMessageLoad, OnRedditApiError errorListener) {
     OnCompleteMessageLoad collector = completeLoadCollector(2, onCompleteMessageLoad);
-    downloadAllPastMessages(user, "inbox", limit, null, collector, errorListener);
-    downloadAllPastMessages(user, "sent", limit, null, collector, errorListener);
+    downloadAllPastMessages(user, "inbox", limit, "", collector, errorListener);
+    downloadAllPastMessages(user, "sent", limit, "", collector, errorListener);
   }
 
   private OnCompleteMessageLoad completeLoadCollector(int numExpectedToFinish, OnCompleteMessageLoad finalCaller) {
