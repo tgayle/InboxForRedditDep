@@ -1,20 +1,22 @@
 package app.endershrooms.inboxforreddit3.fragments;
 
 
-import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.ViewModelProviders;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.adapters.ConversationPreviewAdapter;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
@@ -44,6 +46,7 @@ public class MainMessagesFragment extends Fragment {
     MessagesActivityViewModel viewModel = ViewModelProviders.of(getActivity()).get(MessagesActivityViewModel.class);
     RedditAccount currentAccount = viewModel.getCurrentAccount().getValue();
 
+    //Setup views
     messageRv = (RecyclerView) getView().findViewById(R.id.message_rv);
     CustomLinearLayoutManager linearLayoutManager = new CustomLinearLayoutManager(getContext());
     messageRv.setLayoutManager(linearLayoutManager);
@@ -55,10 +58,11 @@ public class MainMessagesFragment extends Fragment {
 
     swipeRefreshLayout = (SwipeRefreshLayout) getView().findViewById(R.id.activities_messages_swiperefresh);
     View snackbarView = getActivity().findViewById(R.id.messages_activity_fragholder);
-    TextView userTv = (TextView) getView().findViewById(R.id.username_tv);
+//    TextView userTv = (TextView) getView().findViewById(R.id.username_tv);
 
-    userTv.setText(String.format(getString(R.string.login_complete_welcome_user), currentAccount.getUsername()));
-    userTv.setOnClickListener(view -> {
+    Toolbar toolbar = getView().findViewById(R.id.main_messages_frag_toolbar);
+    toolbar.setTitle("Messages");
+    toolbar.setOnClickListener(view -> {
       int topItemPosition = (messageConversationAdapter.getItemCount() - 1 >= 0) ? messageConversationAdapter.getItemCount() - 1 : messageConversationAdapter.getItemCount();
       if (messageConversationAdapter.getItemCount() - linearLayoutManager.findLastVisibleItemPosition() < 15) {
         messageRv.smoothScrollToPosition(topItemPosition);
@@ -66,8 +70,7 @@ public class MainMessagesFragment extends Fragment {
         messageRv.scrollToPosition(topItemPosition);
       }
     });
-    Log.d("Messages Fragment", currentAccount.getUsername() + " account is " + ((currentAccount.getAccountIsNew()) ? "new" : "not new"));
-
+    //Logic
     prepareLoadingStatus(viewModel);
 
     swipeRefreshLayout.setOnRefreshListener(() -> {
@@ -81,9 +84,8 @@ public class MainMessagesFragment extends Fragment {
         messageRv.scrollToPosition(messageConversationAdapter.getItemCount() - 1);
       }
     });
-    Snackbar loading = Snackbar.make(snackbarView, "Loading...", Snackbar.LENGTH_INDEFINITE);
     if (currentAccount.getAccountIsNew()) { //Load all messages if new
-      LiveData<ResponseWithError<String, Throwable>> messagesStatus = viewModel.loadAllMessages();
+      viewModel.loadAllMessages();
       viewModel.setAccountIsNew(false);
     } else {
       ResponseWithError<LoadingStatusEnum, String> currentStatus = viewModel.getLoadingStatus().getValue();
@@ -122,25 +124,32 @@ public class MainMessagesFragment extends Fragment {
           case ERROR:
             swipeRefreshLayout.setRefreshing(false);
             errorSnack.setAction("View", view -> {
-              createAlertDialog(newStatus.getError()).show();
+              createAlertDialog(newStatus.getError(), null).show();
             });
-//            loading.dismiss();
             errorSnack.show();
             break;
           case DONE:
             swipeRefreshLayout.setRefreshing(false);
             errorSnack.dismiss();
-//            loading.dismiss();
             break;
         }
       }
     });
   }
 
-  public AlertDialog createAlertDialog(String message) {
+  void setActionbarDrawerCommunication(DrawerLayout drawer, Toolbar toolbar) {
+    Log.d("MessagesFrag", "Actionbar set up");
+    ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(getActivity(), drawer, toolbar, R.string.drawer_open, R.string.drawer_close);
+    drawer.addDrawerListener(actionBarDrawerToggle);
+    actionBarDrawerToggle.getDrawerArrowDrawable().setColor(Color.WHITE);
+    actionBarDrawerToggle.syncState();
+  }
+
+  private AlertDialog createAlertDialog(String message, @Nullable AlertDialog.OnClickListener onClickListener) {
     return new AlertDialog.Builder(getContext())
         .setMessage(message)
         .setTitle("Error")
+        .setPositiveButton("Confirm", onClickListener)
         .create();
   }
 

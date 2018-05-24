@@ -34,8 +34,6 @@ public class APIManager {
   @SuppressLint("CheckResult")
   private void updateUserToken(RedditAccount user, OnCompleteInterface listener, OnRedditApiError errListener) {
     if (user.getAccessToken() != null && !user.getAccessToken().isTokenExpired()) {
-      //Log.v("Token work", "No need to update token for " +user.getUsername());
-      //Log.v("Token noupdate", user.getAccessToken().getExpiresWhen() + " " + user.getUsername());
       listener.onComplete();
       return;
     }
@@ -44,7 +42,6 @@ public class APIManager {
         .get().getRedditApi().getAccessTokenFromCode(Authentication.basicAuthorizationHeader, new Authentication.Params.RefreshParams(user.getRefreshToken()))
         .observeOn(Schedulers.io())
         .subscribe(jsonLoginResponse -> {
-          //Log.v("Token work", "Updated token. New results are " + jsonLoginResponse.access_token + " and " + jsonLoginResponse.expires_in);
           user.setAccessToken(new AccessToken(jsonLoginResponse.access_token, jsonLoginResponse.expires_in));
           Singleton.get().getDb().accounts().updateAccount(user);
           listener.onComplete();

@@ -36,7 +36,6 @@ public class MessagesActivityViewModel extends AndroidViewModel {
   private MutableLiveData<String> currentConversationName = new MutableLiveData<>();
 
   private MutableLiveData<ResponseWithError<LoadingStatusEnum, String>> loadingStatus = new MutableLiveData<>();
-  //TODO: Single livedata for messages in here instead of getting a new one every time
 
   private SharedPreferences sharedPreferences;
 
@@ -49,7 +48,7 @@ public class MessagesActivityViewModel extends AndroidViewModel {
     setCurrentUsername(sharedPrefUser);
   }
 
-  public void setCurrentUsername(String userName) {
+  private void setCurrentUsername(String userName) {
     Log.d("MessagesActivityViewMod", "Username set to " + userName);
     String sharedPrefName = userName.equals(Constants.USER_REMOVED) ? null : userName;
     sharedPreferences.edit().putString(Constants.SHARED_PREFS_CURRENT_ACC, sharedPrefName).apply();

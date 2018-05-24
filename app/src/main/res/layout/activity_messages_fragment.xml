@@ -1,34 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-
 <android.support.constraint.ConstraintLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   xmlns:app="http://schemas.android.com/apk/res-auto">
 
-  <TextView
-    android:id="@+id/username_tv"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="@string/login_complete_welcome_user"
-    android:textSize="24sp"
-    android:textAlignment="center"
-    app:layout_constraintTop_toTopOf="parent"/>
-
   <android.support.v4.widget.SwipeRefreshLayout
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:id="@+id/activities_messages_swiperefresh"
     app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintTop_toBottomOf="@id/username_tv"
+    app:layout_constraintTop_toBottomOf="@id/main_messages_frag_toolbar"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintVertical_bias="0">
-
-    <!--<ScrollView-->
-      <!--android:layout_width="match_parent"-->
-      <!--android:layout_height="match_parent">-->
 
       <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
@@ -47,7 +33,14 @@
 
       </android.support.constraint.ConstraintLayout>
 
-    <!--</ScrollView>-->
   </android.support.v4.widget.SwipeRefreshLayout>
+
+  <android.support.v7.widget.Toolbar
+    android:layout_width="match_parent"
+    android:layout_height="?attr/actionBarSize"
+    android:background="@color/colorPrimary"
+    app:layout_constraintTop_toTopOf="parent"
+    app:titleTextColor="#fff"
+    android:id="@+id/main_messages_frag_toolbar"/>
 
 </android.support.constraint.ConstraintLayout>

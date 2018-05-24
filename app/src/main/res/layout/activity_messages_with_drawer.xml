@@ -19,23 +19,6 @@
     android:layout_height="match_parent"
     android:id="@+id/messages_activity_fragholder">
 
-    <android.support.design.widget.AppBarLayout
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:theme="@style/AppTheme.AppBarOverlay">
-
-      <android.support.v7.widget.Toolbar
-        android:layout_width="match_parent"
-        android:minHeight="?attr/actionBarSize"
-        android:layout_height="wrap_content"
-        android:background="@color/colorPrimary"
-        android:id="@+id/toolbar"
-        app:layout_constraintTop_toTopOf="parent">
-
-      </android.support.v7.widget.Toolbar>
-
-    </android.support.design.widget.AppBarLayout>
-
   </FrameLayout>
 
   <android.support.design.widget.NavigationView
@@ -58,7 +41,6 @@
           android:id="@+id/main_drawer_navheader"
           android:layout_width="match_parent"
           android:layout_height="180dp"
-          android:background="#ffaa"
           android:orientation="vertical">
 
           <RelativeLayout
@@ -87,7 +69,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-medium"
                 android:text="Username"
-                android:textColor="#FFFFFF"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="14sp"/>
 
               <ImageButton
@@ -114,12 +96,6 @@
           android:id="@+id/activity_messages_drawer_users_list">
 
         </android.support.v7.widget.RecyclerView>
-
-        <!--<include layout="@layout/main_drawer_users_expanded"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_width="match_parent">-->
-
-        <!--</include>-->
 
         <Button
           android:layout_width="match_parent"
