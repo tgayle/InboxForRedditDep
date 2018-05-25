@@ -14,7 +14,6 @@ public class AddNewAccountActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_add_new_account);
-    getSupportActionBar().hide();
     getSupportFragmentManager()
         .beginTransaction()
         .add(R.id.fragment_holder, LoginFragment.newInstance())

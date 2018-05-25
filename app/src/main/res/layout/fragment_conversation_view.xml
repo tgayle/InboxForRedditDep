@@ -9,15 +9,47 @@
   tools:context=".fragments.ConversationViewFragment"
   android:background="#ffffffff">
 
-  <android.support.v7.widget.RecyclerView
+  <android.support.design.widget.AppBarLayout
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/messages_list"
-    app:layout_constraintTop_toTopOf="parent"
-    app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintEnd_toEndOf="parent"
-    tools:listitem="@layout/card_message_rv_linear"/>
+    android:layout_height="wrap_content"
+    android:id="@+id/conversation_fragment_appbarlayout">
+
+    <android.support.design.widget.CollapsingToolbarLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      app:layout_scrollFlags="scroll|enterAlways">
+      <!--FIXME: Toolbar text won't appear.-->
+      <android.support.v7.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:id="@+id/conversation_fragment_toolbar"
+        app:title="Conversation Subject"
+        app:titleTextColor="#ffffff"
+        app:layout_collapseMode="parallax">
+      </android.support.v7.widget.Toolbar>
+    </android.support.design.widget.CollapsingToolbarLayout>
+  </android.support.design.widget.AppBarLayout>
+
+  <android.support.design.widget.FloatingActionButton
+    android:id="@+id/conversation_fragment_fab"
+    app:srcCompat="@drawable/ic_message_received_black_18dp"
+    android:layout_margin="16dp"
+    android:layout_height="wrap_content"
+    android:layout_width="wrap_content"
+    android:layout_gravity="bottom|end"/>
+
+    <android.support.v7.widget.RecyclerView
+      android:id="@+id/messages_list"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      app:layout_behavior="@string/appbar_scrolling_view_behavior"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      tools:listitem="@layout/card_message_rv_linear"/>
+
 
 
 </android.support.design.widget.CoordinatorLayout>

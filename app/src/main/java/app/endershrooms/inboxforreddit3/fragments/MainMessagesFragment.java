@@ -20,7 +20,6 @@ import android.view.ViewGroup;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.adapters.ConversationPreviewAdapter;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
-import app.endershrooms.inboxforreddit3.models.reddit.ResponseWithError;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel.LoadingStatusEnum;
 import app.endershrooms.inboxforreddit3.views.CustomLinearLayoutManager;
@@ -47,7 +46,7 @@ public class MainMessagesFragment extends Fragment {
     RedditAccount currentAccount = viewModel.getCurrentAccount().getValue();
 
     //Setup views
-    messageRv = (RecyclerView) getView().findViewById(R.id.message_rv);
+    messageRv = (RecyclerView) getView().findViewById(R.id.messages_frag_message_rv);
     CustomLinearLayoutManager linearLayoutManager = new CustomLinearLayoutManager(getContext());
     messageRv.setLayoutManager(linearLayoutManager);
     linearLayoutManager.setReverseLayout(true);
@@ -73,9 +72,7 @@ public class MainMessagesFragment extends Fragment {
     //Logic
     prepareLoadingStatus(viewModel);
 
-    swipeRefreshLayout.setOnRefreshListener(() -> {
-      startRefresh(viewModel);
-    });
+    swipeRefreshLayout.setOnRefreshListener(() -> startRefresh(viewModel));
 
     viewModel.getMessagesForConversationView().observe(MainMessagesFragment.this, conversations -> {
       messageConversationAdapter.submitList(conversations);
@@ -88,10 +85,8 @@ public class MainMessagesFragment extends Fragment {
       viewModel.loadAllMessages();
       viewModel.setAccountIsNew(false);
     } else {
-      ResponseWithError<LoadingStatusEnum, String> currentStatus = viewModel.getLoadingStatus().getValue();
-      if (currentStatus != null && currentStatus.getData() != LoadingStatusEnum.LOADING) {
-        startRefresh(viewModel);
-      }
+      Log.d("MainMessages", "Starting refresh");
+      startRefresh(viewModel);
     }
   }
 

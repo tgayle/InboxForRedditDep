@@ -3,8 +3,10 @@ package app.endershrooms.inboxforreddit3.fragments;
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,18 +35,32 @@ public class ConversationViewFragment extends Fragment {
     RedditAccount currentAccount = model.getCurrentAccount().getValue();
     Log.d("ConversationViewFrag", "Current account is " + currentAccount);
 
-    RecyclerView messages = getView().findViewById(R.id.messages_list);
-    messages.setLayoutManager(new CustomLinearLayoutManager(getContext()));
+    RecyclerView messagesRv = getView().findViewById(R.id.messages_list);
+    messagesRv.setLayoutManager(new CustomLinearLayoutManager(getContext()));
     ConversationFullAdapter adapter = new ConversationFullAdapter();
-    messages.setAdapter(adapter);
+    messagesRv.setAdapter(adapter);
+
+    FloatingActionButton fab = getView().findViewById(R.id.conversation_fragment_fab);
 
     AtomicBoolean didFirstScrollToBottom = new AtomicBoolean(false);
     model.getAllConversationMessagesPaged(currentAccount, model.getCurrentConversationName().getValue())
     .observe(this, list -> {
       adapter.submitList(list);
       if (!didFirstScrollToBottom.get()) {
-        messages.scrollToPosition((adapter.getItemCount() == 0) ? 0 : adapter.getItemCount() - 1);
+        messagesRv.scrollToPosition((adapter.getItemCount() == 0) ? 0 : adapter.getItemCount() - 1);
         didFirstScrollToBottom.set(true);
+      }
+    });
+
+    messagesRv.addOnScrollListener(new OnScrollListener() {
+      @Override
+      public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+        if (dy > 0 && fab.isShown()) {
+          fab.hide();
+        } else if (dy < 0 && !fab.isShown()) {
+          fab.show();
+        }
+        super.onScrolled(recyclerView, dx, dy);
       }
     });
 
