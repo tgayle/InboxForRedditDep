@@ -7,10 +7,12 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import app.endershrooms.inboxforreddit3.MiscFuncs;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.adapters.ConversationFullAdapter;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
@@ -41,6 +43,17 @@ public class ConversationViewFragment extends Fragment {
     messagesRv.setAdapter(adapter);
 
     FloatingActionButton fab = getView().findViewById(R.id.conversation_fragment_fab);
+    Toolbar toolbarLayout = getView().findViewById(R.id.conversation_fragment_toolbar);
+    toolbarLayout.setTitle(model.getCurrentConversationName().getValue());
+
+    toolbarLayout.setOnClickListener(view -> {
+      MiscFuncs.smartScrollToTop(messagesRv, 15);
+    });
+
+    fab.setOnLongClickListener(view -> {
+      messagesRv.scrollToPosition((adapter.getItemCount() == 0) ? 0 : adapter.getItemCount() - 1);
+      return true;
+    });
 
     AtomicBoolean didFirstScrollToBottom = new AtomicBoolean(false);
     model.getAllConversationMessagesPaged(currentAccount, model.getCurrentConversationName().getValue())
@@ -55,9 +68,9 @@ public class ConversationViewFragment extends Fragment {
     messagesRv.addOnScrollListener(new OnScrollListener() {
       @Override
       public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-        if (dy > 0 && fab.isShown()) {
+        if (dy > 0 && dy > 15 && fab.isShown()) {
           fab.hide();
-        } else if (dy < 0 && !fab.isShown()) {
+        } else if (dy < 0 && dy < -15 && !fab.isShown()) {
           fab.show();
         }
         super.onScrolled(recyclerView, dx, dy);

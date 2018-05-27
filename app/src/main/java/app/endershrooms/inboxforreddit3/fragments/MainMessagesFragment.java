@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import app.endershrooms.inboxforreddit3.MiscFuncs;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.adapters.ConversationPreviewAdapter;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
@@ -62,12 +63,7 @@ public class MainMessagesFragment extends Fragment {
     Toolbar toolbar = getView().findViewById(R.id.main_messages_frag_toolbar);
     toolbar.setTitle("Messages");
     toolbar.setOnClickListener(view -> {
-      int topItemPosition = (messageConversationAdapter.getItemCount() - 1 >= 0) ? messageConversationAdapter.getItemCount() - 1 : messageConversationAdapter.getItemCount();
-      if (messageConversationAdapter.getItemCount() - linearLayoutManager.findLastVisibleItemPosition() < 15) {
-        messageRv.smoothScrollToPosition(topItemPosition);
-      } else {
-        messageRv.scrollToPosition(topItemPosition);
-      }
+      MiscFuncs.smartScrollToTop(messageRv, 15);
     });
     //Logic
     prepareLoadingStatus(viewModel);

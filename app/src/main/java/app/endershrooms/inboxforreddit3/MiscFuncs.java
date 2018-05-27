@@ -1,5 +1,7 @@
 package app.endershrooms.inboxforreddit3;
 
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
 import android.util.Log;
 
@@ -33,6 +35,34 @@ public class MiscFuncs {
       text = text.substring(0, text.length() - 1);
     }
     return text;
+  }
+
+  public static void smartScrollToTop(RecyclerView recyclerView, int itemsVisibleBeforeTeleportingToTop) {
+    if (!(recyclerView.getLayoutManager() instanceof LinearLayoutManager)) return;
+    LinearLayoutManager linearLayoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+
+    int topItemPosition;
+    //the position of where the top of the list is. This can be position 0 or items.size - 1 if the layout manager has stackFromEnd and reverseLayout set to true
+    int itemVisibleForTeleportCheck;
+    //the first or last item visible in the recyclerview
+
+    boolean recyclerViewIsReversed = linearLayoutManager.getStackFromEnd() && linearLayoutManager.getReverseLayout();
+    if (recyclerViewIsReversed) {
+      topItemPosition = (recyclerView.getAdapter().getItemCount() - 1 >= 0) ? recyclerView.getAdapter().getItemCount() - 1 : recyclerView.getAdapter().getItemCount();
+      itemVisibleForTeleportCheck = linearLayoutManager.findLastVisibleItemPosition();
+    } else {
+      topItemPosition = 0;
+      itemVisibleForTeleportCheck = linearLayoutManager.findFirstVisibleItemPosition();
+    }
+
+    boolean shouldTeleportToTop = (recyclerViewIsReversed) ?
+        itemVisibleForTeleportCheck > itemsVisibleBeforeTeleportingToTop :
+        itemVisibleForTeleportCheck < itemsVisibleBeforeTeleportingToTop;
+    if (shouldTeleportToTop) {
+      recyclerView.smoothScrollToPosition(topItemPosition);
+    } else {
+      recyclerView.scrollToPosition(topItemPosition);
+    }
   }
 
   public static void debugLog(String tag, String log) {
