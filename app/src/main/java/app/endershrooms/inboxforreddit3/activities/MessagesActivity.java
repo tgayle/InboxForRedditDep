@@ -45,7 +45,6 @@ public class MessagesActivity extends BaseActivity {
     drawerAccountSwitcher.setLayoutManager(new LinearLayoutManager(MessagesActivity.this));
     TextView drawerUsernameTv = findViewById(R.id.main_drawer_navheader_username);
     DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-
     accountsListAdapter = new AccountsListAdapter(new OnAccountListInteraction() {
       @Override
       public void onAccountSelected(RedditAccount account) {
@@ -60,7 +59,6 @@ public class MessagesActivity extends BaseActivity {
       }
     });
     drawerAccountSwitcher.setAdapter(accountsListAdapter);
-
     model.getAccountsAsPagedList().observe(this, list -> accountsListAdapter.submitList(list));
 
     model.getCurrentUserName().observe(this, name -> {

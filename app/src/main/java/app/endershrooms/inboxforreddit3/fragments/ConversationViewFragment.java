@@ -36,8 +36,7 @@ public class ConversationViewFragment extends Fragment {
     MessagesActivityViewModel model = ViewModelProviders.of(getActivity()).get(MessagesActivityViewModel.class);
     RedditAccount currentAccount = model.getCurrentAccount().getValue();
     Log.d("ConversationViewFrag", "Current account is " + currentAccount);
-
-    RecyclerView messagesRv = getView().findViewById(R.id.messages_list);
+    RecyclerView messagesRv = getView().findViewById(R.id.conversation_fragment_messages_list);
     messagesRv.setLayoutManager(new CustomLinearLayoutManager(getContext()));
     ConversationFullAdapter adapter = new ConversationFullAdapter();
     messagesRv.setAdapter(adapter);

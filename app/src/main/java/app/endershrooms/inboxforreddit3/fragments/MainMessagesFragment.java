@@ -58,7 +58,6 @@ public class MainMessagesFragment extends Fragment {
 
     swipeRefreshLayout = (SwipeRefreshLayout) getView().findViewById(R.id.activities_messages_swiperefresh);
     View snackbarView = getActivity().findViewById(R.id.messages_activity_fragholder);
-//    TextView userTv = (TextView) getView().findViewById(R.id.username_tv);
 
     Toolbar toolbar = getView().findViewById(R.id.main_messages_frag_toolbar);
     toolbar.setTitle("Messages");

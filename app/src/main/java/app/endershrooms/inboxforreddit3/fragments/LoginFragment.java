@@ -158,7 +158,7 @@ public class LoginFragment extends Fragment {
     super.onDetach();
   }
 
-  interface OnWebviewChange {
+  public interface OnWebviewChange {
     void onPageFinished();
   }
 }
