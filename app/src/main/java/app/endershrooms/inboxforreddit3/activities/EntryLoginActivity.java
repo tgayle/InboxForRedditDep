@@ -6,7 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.adapters.WelcomeActivityViewPagerAdapter;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
-import app.endershrooms.inboxforreddit3.viewmodels.EntryLoginActivityViewModel;
+import app.endershrooms.inboxforreddit3.viewmodels.login.EntryLoginActivityViewModel;
 import app.endershrooms.inboxforreddit3.views.NoSwipeViewPager;
 
 public class EntryLoginActivity extends AppCompatActivity {

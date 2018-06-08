@@ -48,7 +48,7 @@ public class ConversationPreviewAdapter extends
     return getCurrentList().size();
   }
 
-  class PreviewViewHolder extends MessageViewHolder {
+  public class PreviewViewHolder extends MessageViewHolder {
 
     public PreviewViewHolder(View itemView) {
       super(itemView, 2);

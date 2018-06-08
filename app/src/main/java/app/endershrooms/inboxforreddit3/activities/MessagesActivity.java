@@ -1,5 +1,7 @@
 package app.endershrooms.inboxforreddit3.activities;
 
+import static app.endershrooms.inboxforreddit3.MiscFuncs.shouldCurrentAccountBeReplaced;
+
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,11 +12,9 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import app.endershrooms.inboxforreddit3.Constants;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.adapters.AccountsListAdapter;
 import app.endershrooms.inboxforreddit3.fragments.ConversationViewFragment;
@@ -29,8 +29,13 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 
 public class MessagesActivity extends BaseActivity {
+
+  public static final String MESSAGES_FRAG_TAG = "messagesFrag";
+  public static final String CONVERSATION_FRAG_TAG = "conversationFrag";
   AccountsListAdapter accountsListAdapter;
   MessagesActivityViewModel model;
+
+  DrawerLayout drawer;
 
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,51 +49,37 @@ public class MessagesActivity extends BaseActivity {
     final RecyclerView drawerAccountSwitcher = (RecyclerView) findViewById(R.id.activity_messages_drawer_users_list);
     drawerAccountSwitcher.setLayoutManager(new LinearLayoutManager(MessagesActivity.this));
     TextView drawerUsernameTv = findViewById(R.id.main_drawer_navheader_username);
-    DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-    accountsListAdapter = new AccountsListAdapter(new OnAccountListInteraction() {
-      @Override
-      public void onAccountSelected(RedditAccount account) {
-        model.initAccountSwitch(account);
-        Log.d("AccountSelected", account.getUsername() + " selected");
-        drawer.closeDrawer(GravityCompat.START);
-      }
 
-      @Override
-      public void onAccountRemoved(RedditAccount account) {
-        model.removeAccount(account);
-      }
-    });
+    drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+    accountsListAdapter = new AccountsListAdapter(getAccountListInteractionListener());
     drawerAccountSwitcher.setAdapter(accountsListAdapter);
     model.getAccountsAsPagedList().observe(this, list -> accountsListAdapter.submitList(list));
 
     model.getCurrentUserName().observe(this, name -> {
-        if (name != null) {
-          if (name.equals(Constants.USER_REMOVED)) {
+          if (model.shouldReturnToLoginScreen(name)) {
             finish();
             Intent goBackToLogin = new Intent(this, EntryLoginActivity.class);
             startActivity(goBackToLogin);
           }
-        }
     });
 
-    AtomicReference<RedditAccount> localCurrentAccount = new AtomicReference<>();
-    model.getCurrentAccount().observe(this, currentAccount -> {
-      if (currentAccount != null) {
-        if (localCurrentAccount.get() == null || !localCurrentAccount.get().getUsername().equals(currentAccount.getUsername())) {
-          localCurrentAccount.set(currentAccount);
-          drawerUsernameTv.setText(currentAccount.getUsername());
-          Fragment messagesFragment = getSupportFragmentManager().findFragmentByTag("messagesFrag");
-          FragmentTransaction fm = getSupportFragmentManager().beginTransaction();
+    AtomicReference<RedditAccount> currentAccount = new AtomicReference<>();
+    model.getCurrentAccount().observe(this, newAccount -> {
+      if (newAccount != null && shouldCurrentAccountBeReplaced(currentAccount.get(), newAccount)) {
+        currentAccount.set(newAccount);
+        drawerUsernameTv.setText(newAccount.getUsername());
+        Fragment messagesFragment = getSupportFragmentManager()
+            .findFragmentByTag(MESSAGES_FRAG_TAG);
+        FragmentTransaction fm = getSupportFragmentManager().beginTransaction();
 
-          if (messagesFragment == null) { //Temporarily do nothing if fragment already loaded.
-            fm.add(R.id.messages_activity_fragholder, MainMessagesFragment.newInstance(),
-                "messagesFrag");
-          } else {
-            fm.replace(R.id.messages_activity_fragholder, MainMessagesFragment.newInstance(),
-                "messagesFrag");
-          }
-          fm.commit();
+        if (messagesFragment == null) { //Temporarily do nothing if fragment already loaded.
+          fm.add(R.id.messages_activity_fragholder, MainMessagesFragment.newInstance(),
+              MESSAGES_FRAG_TAG);
+        } else {
+          fm.replace(R.id.messages_activity_fragholder, MainMessagesFragment.newInstance(),
+              MESSAGES_FRAG_TAG);
         }
+        fm.commit();
       }
     });
 
@@ -96,10 +87,10 @@ public class MessagesActivity extends BaseActivity {
       FragmentTransaction transaction = getSupportFragmentManager()
           .beginTransaction()
           .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_right, R.anim.slide_in_right, R.anim.slide_out_right);
-      Fragment conversationFragment = getSupportFragmentManager().findFragmentByTag("conversationFrag");
+      Fragment conversationFragment = getSupportFragmentManager().findFragmentByTag(CONVERSATION_FRAG_TAG);
       if (parent != null) {
         transaction
-            .add(R.id.messages_activity_fragholder, ConversationViewFragment.newInstance(), "conversationFrag")
+            .add(R.id.messages_activity_fragholder, ConversationViewFragment.newInstance(), CONVERSATION_FRAG_TAG)
             .addToBackStack(null);
       } else {
         if (conversationFragment != null) {
@@ -121,6 +112,21 @@ public class MessagesActivity extends BaseActivity {
 
   }
 
+  private OnAccountListInteraction getAccountListInteractionListener() {
+    return new OnAccountListInteraction() {
+      @Override
+      public void onAccountSelected(RedditAccount account) {
+        model.initAccountSwitch(account);
+        drawer.closeDrawer(GravityCompat.START);
+      }
+
+      @Override
+      public void onAccountRemoved(RedditAccount account) {
+        model.removeAccount(account);
+      }
+    };
+  }
+
   @Override
   protected void onRestart() {
     super.onRestart();
@@ -130,13 +136,11 @@ public class MessagesActivity extends BaseActivity {
   @Override
   protected void onResume() {
     super.onResume();
-    DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
     drawer.closeDrawer(GravityCompat.START);
   }
 
   @Override
   public void onBackPressed() {
-    DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
     if (drawer.isDrawerOpen(GravityCompat.START)) {
       drawer.closeDrawer(GravityCompat.START);
     } else {

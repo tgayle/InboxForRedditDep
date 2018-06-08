@@ -23,8 +23,8 @@ import android.widget.ProgressBar;
 import app.endershrooms.inboxforreddit3.Constants;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.models.reddit.ResponseWithError;
-import app.endershrooms.inboxforreddit3.viewmodels.BaseLoginViewModel.LoginWebviewResult;
-import app.endershrooms.inboxforreddit3.viewmodels.EntryLoginActivityViewModel;
+import app.endershrooms.inboxforreddit3.viewmodels.login.BaseLoginViewModel.LoginWebviewResult;
+import app.endershrooms.inboxforreddit3.viewmodels.login.EntryLoginActivityViewModel;
 
 public class LoginFragment extends Fragment {
 

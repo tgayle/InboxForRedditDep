@@ -123,7 +123,14 @@ public class Message {
     this.isNew = is_new;
   }
 
-  public boolean currentUserSentMessage() {
+  public String getCorrespondent() {
+    if (messageOwner.equals(author)) {
+      return destination;
+    }
+    return author;
+  }
+
+  public boolean didCurrentUserSendMessage() {
     return this.getMessageOwner().equals(this.getAuthor());
   }
 

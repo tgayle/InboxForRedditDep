@@ -1,4 +1,4 @@
-package app.endershrooms.inboxforreddit3.viewmodels;
+package app.endershrooms.inboxforreddit3.viewmodels.login;
 
 import android.annotation.SuppressLint;
 import android.app.Application;

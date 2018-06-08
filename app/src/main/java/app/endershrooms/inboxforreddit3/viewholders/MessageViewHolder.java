@@ -43,7 +43,7 @@ public abstract class MessageViewHolder extends ViewHolder {
   public abstract View.OnClickListener onMessageClick(Message message);
 
   public String getUsernameTVText(Message message) {
-    if (message.currentUserSentMessage()) {
+    if (message.didCurrentUserSendMessage()) {
       return message.getDestination();
     } else {
       return message.getAuthor();
@@ -59,7 +59,7 @@ public abstract class MessageViewHolder extends ViewHolder {
     String trimmedMsg = message.getMessageBody().trim();
     this.subjectTv.setText(message.getSubject());
 
-    if (message.currentUserSentMessage()) {
+    if (message.didCurrentUserSendMessage()) {
       this.sentReceivedIv.setRotation(180f); //sent top-right angle
     } else {
       this.sentReceivedIv.setRotation(0f); //received

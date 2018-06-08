@@ -2,6 +2,7 @@ package app.endershrooms.inboxforreddit3.viewmodels;
 
 import android.app.Application;
 import android.support.annotation.NonNull;
+import app.endershrooms.inboxforreddit3.viewmodels.login.BaseLoginViewModel;
 
 /**
  * ViewModel for adding a new account when we already have accounts. No custom implementation here

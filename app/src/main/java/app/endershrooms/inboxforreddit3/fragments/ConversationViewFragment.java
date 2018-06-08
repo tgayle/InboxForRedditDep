@@ -4,7 +4,6 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.support.v7.widget.Toolbar;
@@ -15,12 +14,16 @@ import android.view.ViewGroup;
 import app.endershrooms.inboxforreddit3.MiscFuncs;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.adapters.ConversationFullAdapter;
+import app.endershrooms.inboxforreddit3.models.reddit.Message;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel;
 import app.endershrooms.inboxforreddit3.views.CustomLinearLayoutManager;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ConversationViewFragment extends Fragment {
+public class ConversationViewFragment extends BaseFragment {
+
+  AtomicBoolean didFirstLoad = new AtomicBoolean(false);
+  Toolbar toolbarLayout;
 
   public ConversationViewFragment() {
     // Required empty public constructor
@@ -42,25 +45,24 @@ public class ConversationViewFragment extends Fragment {
     messagesRv.setAdapter(adapter);
 
     FloatingActionButton fab = getView().findViewById(R.id.conversation_fragment_fab);
-    Toolbar toolbarLayout = getView().findViewById(R.id.conversation_fragment_toolbar);
-    toolbarLayout.setTitle(model.getCurrentConversationName().getValue());
-
+    toolbarLayout = getView().findViewById(R.id.conversation_fragment_toolbar);
     toolbarLayout.setOnClickListener(view -> {
       MiscFuncs.smartScrollToTop(messagesRv, 15);
     });
+
+    setToolbarBackButton(toolbarLayout);
 
     fab.setOnLongClickListener(view -> {
       messagesRv.scrollToPosition((adapter.getItemCount() == 0) ? 0 : adapter.getItemCount() - 1);
       return true;
     });
 
-    AtomicBoolean didFirstScrollToBottom = new AtomicBoolean(false);
     model.getAllConversationMessagesPaged(currentAccount, model.getCurrentConversationName().getValue())
     .observe(this, list -> {
       adapter.submitList(list);
-      if (!didFirstScrollToBottom.get()) {
-        messagesRv.scrollToPosition((adapter.getItemCount() == 0) ? 0 : adapter.getItemCount() - 1);
-        didFirstScrollToBottom.set(true);
+      messagesRv.scrollToPosition((adapter.getItemCount() == 0) ? 0 : adapter.getItemCount() - 1);
+      if (list != null) {
+        onFirstLoad(list.get(0));
       }
     });
 
@@ -76,6 +78,13 @@ public class ConversationViewFragment extends Fragment {
       }
     });
 
+  }
+
+  private void onFirstLoad(Message message) {
+    if (!didFirstLoad.get()) {
+      didFirstLoad.set(true);
+      toolbarLayout.setTitle("Conversation with " + message.getCorrespondent());
+    }
   }
 
   @Override

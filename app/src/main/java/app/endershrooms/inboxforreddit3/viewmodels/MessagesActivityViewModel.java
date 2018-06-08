@@ -177,4 +177,8 @@ public class MessagesActivityViewModel extends AndroidViewModel {
     ERROR,
     DONE
   }
+
+  public boolean shouldReturnToLoginScreen(String username) {
+    return username != null && username.equals(Constants.USER_REMOVED);
+  }
 }

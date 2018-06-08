@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -16,6 +15,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import app.endershrooms.inboxforreddit3.MiscFuncs;
 import app.endershrooms.inboxforreddit3.R;
@@ -25,12 +25,15 @@ import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel.LoadingStatusEnum;
 import app.endershrooms.inboxforreddit3.views.CustomLinearLayoutManager;
 
-public class MainMessagesFragment extends Fragment {
+public class MainMessagesFragment extends BaseFragment {
 
 
   ConversationPreviewAdapter messageConversationAdapter;
   SwipeRefreshLayout swipeRefreshLayout;
   RecyclerView messageRv;
+
+  MessagesActivityViewModel viewModel;
+
 
   public MainMessagesFragment() {
     // Required empty public constructor
@@ -43,7 +46,7 @@ public class MainMessagesFragment extends Fragment {
   @Override
   public void onActivityCreated(@Nullable Bundle savedInstanceState) {
     super.onActivityCreated(savedInstanceState);
-    MessagesActivityViewModel viewModel = ViewModelProviders.of(getActivity()).get(MessagesActivityViewModel.class);
+    viewModel = ViewModelProviders.of(getActivity()).get(MessagesActivityViewModel.class);
     RedditAccount currentAccount = viewModel.getCurrentAccount().getValue();
 
     //Setup views
@@ -64,10 +67,18 @@ public class MainMessagesFragment extends Fragment {
     toolbar.setOnClickListener(view -> {
       MiscFuncs.smartScrollToTop(messageRv, 15);
     });
-    //Logic
-    prepareLoadingStatus(viewModel);
 
-    swipeRefreshLayout.setOnRefreshListener(() -> startRefresh(viewModel));
+    setToolbarBackButton(toolbar, new OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        //TODO:Open drawer.
+      }
+    });
+
+    //Logic
+    prepareLoadingStatus();
+
+    swipeRefreshLayout.setOnRefreshListener(() -> startRefresh());
 
     viewModel.getMessagesForConversationView().observe(MainMessagesFragment.this, conversations -> {
       messageConversationAdapter.submitList(conversations);
@@ -76,16 +87,17 @@ public class MainMessagesFragment extends Fragment {
         messageRv.scrollToPosition(messageConversationAdapter.getItemCount() - 1);
       }
     });
+
     if (currentAccount.getAccountIsNew()) { //Load all messages if new
       viewModel.loadAllMessages();
       viewModel.setAccountIsNew(false);
     } else {
       Log.d("MainMessages", "Starting refresh");
-      startRefresh(viewModel);
+      startRefresh();
     }
   }
 
-  void startRefresh(MessagesActivityViewModel viewModel) {
+  void startRefresh() {
     viewModel.setLoadingStatus(LoadingStatusEnum.LOADING);
 
     viewModel.loadNewestMessages().observe(this, stringThrowableResponseWithError -> {
@@ -98,7 +110,7 @@ public class MainMessagesFragment extends Fragment {
     });
   }
 
-  void prepareLoadingStatus(MessagesActivityViewModel viewModel) {
+  void prepareLoadingStatus() {
     Snackbar errorSnack = Snackbar.make( getActivity().findViewById(R.id.messages_activity_fragholder),
         "There was an issue...", Snackbar.LENGTH_INDEFINITE);
 
@@ -147,6 +159,7 @@ public class MainMessagesFragment extends Fragment {
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
 
+    //TODO: List number of unread messages.
     //TODO: Replying to messages
     //TODO: Marking messages as read on open or reply
     //TODO: Message notifications

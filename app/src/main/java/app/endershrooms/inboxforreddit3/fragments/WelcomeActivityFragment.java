@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import app.endershrooms.inboxforreddit3.R;
-import app.endershrooms.inboxforreddit3.viewmodels.EntryLoginActivityViewModel;
+import app.endershrooms.inboxforreddit3.viewmodels.login.EntryLoginActivityViewModel;
 
 
 public class WelcomeActivityFragment extends Fragment {

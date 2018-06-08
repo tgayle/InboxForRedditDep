@@ -1,4 +1,4 @@
-package app.endershrooms.inboxforreddit3.viewmodels;
+package app.endershrooms.inboxforreddit3.viewmodels.login;
 
 import android.app.Application;
 import android.arch.lifecycle.LiveData;

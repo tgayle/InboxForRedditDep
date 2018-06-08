@@ -4,6 +4,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
 import android.util.Log;
+import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 
 /**
  * Created by Travis on 1/22/2018.
@@ -63,6 +64,10 @@ public class MiscFuncs {
     } else {
       recyclerView.scrollToPosition(topItemPosition);
     }
+  }
+
+  public static boolean shouldCurrentAccountBeReplaced(RedditAccount currentAccount, RedditAccount newAccount) {
+    return currentAccount == null || !currentAccount.getUsername().equals(newAccount.getUsername());
   }
 
   public static void debugLog(String tag, String log) {
