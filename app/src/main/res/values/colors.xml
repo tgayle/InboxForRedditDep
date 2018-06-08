@@ -4,5 +4,5 @@
   <color name="colorPrimaryDark">#303F9F</color>
   <color name="colorAccent">#FF4081</color>
   <color name="message_black">#000000</color>
-  <color name="unread_message">#e2513e</color>
+  <color name="unread_message">#FF7500</color>
 </resources>

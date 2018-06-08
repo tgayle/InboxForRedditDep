@@ -87,6 +87,10 @@ public class MessagesRepository {
     return messageDao.getUnreadMessagesForAccount(acc.getUsername());
   }
 
+  public LiveData<List<Message>> getUnreadMessagesAsListForAccount(RedditAccount acc) {
+    return messageDao.getUnreadMessagesAsListForAccount(acc.getUsername());
+  }
+
   public LiveData<List<Message>> getAllMessagesForAccount(RedditAccount user) {
    return messageDao.getAllUserMessagesAsc(user.getUsername());
   }

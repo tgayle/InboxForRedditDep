@@ -5,19 +5,15 @@ import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.Transformations;
-import android.arch.paging.PagedList;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import app.endershrooms.inboxforreddit3.Constants;
-import app.endershrooms.inboxforreddit3.models.reddit.Message;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import app.endershrooms.inboxforreddit3.models.reddit.ResponseWithError;
-import app.endershrooms.inboxforreddit3.repositories.MessagesRepository;
-import app.endershrooms.inboxforreddit3.repositories.UserRepository;
+import app.endershrooms.inboxforreddit3.viewmodels.model.MessagesActivityDataModel;
 import java.util.List;
 
 /**
@@ -25,19 +21,12 @@ import java.util.List;
  */
 
 public class MessagesActivityViewModel extends AndroidViewModel {
-  private UserRepository userRepo = UserRepository.get();
-  private MessagesRepository messageRepo = MessagesRepository.get();
-  private MutableLiveData<String> currentUserName = new MutableLiveData<>();
-  private LiveData<RedditAccount> currentAccount = Transformations.switchMap(currentUserName, username -> {
-    Log.d("SwitchMap", "Account switched");
-    return userRepo.getAccount(username);
-  });
-
+  private MessagesActivityDataModel dataModel = new MessagesActivityDataModel();
   private MutableLiveData<String> currentConversationName = new MutableLiveData<>();
-
   private MutableLiveData<ResponseWithError<LoadingStatusEnum, String>> loadingStatus = new MutableLiveData<>();
-
   private SharedPreferences sharedPreferences;
+  private MutableLiveData<String> currentUserName = dataModel.getCurrentUserNameAsMutable();
+  private LiveData<RedditAccount> currentAccount = dataModel.getCurrentAccount();
 
   public MessagesActivityViewModel(@NonNull Application application) {
     super(application);
@@ -60,35 +49,6 @@ public class MessagesActivityViewModel extends AndroidViewModel {
     setLoadingStatus(LoadingStatusEnum.DONE);
   }
 
-  public LiveData<RedditAccount> getCurrentAccount() {
-    return currentAccount;
-  }
-
-  public LiveData<String> getCurrentUserName() {
-    return currentUserName;
-  }
-
-  public LiveData<List<RedditAccount>> getAccounts() {
-    return userRepo.getAccounts();
-  }
-
-  public LiveData<RedditAccount> getAccount(String username) {
-    return userRepo.getAccount(username);
-  }
-
-  public LiveData<PagedList<RedditAccount>> getAccountsAsPagedList() {
-    return userRepo.getAccountsAsPagedList();
-  }
-
-  //Returns a list of conversations with the oldest messages at top.
-  public LiveData<PagedList<Message>> getMessagesForConversationView() {
-    return messageRepo.getNewestMessagesPerConversation(currentAccount.getValue());
-  }
-
-  public LiveData<PagedList<Message>> getAllConversationMessagesPaged(RedditAccount user, String parentName) {
-    return messageRepo.getMessagesForConversationPaged(user, parentName);
-  }
-
   public LiveData<String> getCurrentConversationName() {
     return currentConversationName;
   }
@@ -97,14 +57,18 @@ public class MessagesActivityViewModel extends AndroidViewModel {
     currentConversationName.setValue(parentName);
   }
 
+  public MessagesActivityDataModel getDataModel() {
+    return dataModel;
+  }
+
   public LiveData<ResponseWithError<String, Throwable>> loadNewestMessages() {
     Log.d("MessagesViewModel", "Load newest " + (currentAccount.getValue() == null ? currentAccount : currentAccount.getValue().getUsername()));
-    return messageRepo.loadNewestMessages(currentAccount.getValue());
+    return dataModel.getMessageRepo().loadNewestMessages(currentAccount.getValue());
   }
 
   public LiveData<ResponseWithError<String, Throwable>> loadAllMessages() {
     setLoadingStatus(LoadingStatusEnum.LOADING, null);
-    LiveData<ResponseWithError<String, Throwable>> result = messageRepo.loadAllMessages(currentAccount.getValue());
+    LiveData<ResponseWithError<String, Throwable>> result = dataModel.getMessageRepo().loadAllMessages(currentAccount.getValue());
     result.observeForever(new Observer<ResponseWithError<String, Throwable>>() {
       @Override
       public void onChanged(@Nullable ResponseWithError<String, Throwable> stringThrowableResponseWithError) {
@@ -134,8 +98,8 @@ public class MessagesActivityViewModel extends AndroidViewModel {
   }
 
   public void removeAccount(RedditAccount removedAccount) {
-    userRepo.removeAccount(removedAccount);
-    messageRepo.removeAccountMessages(removedAccount);
+    dataModel.getUserRepo().removeAccount(removedAccount);
+    dataModel.getMessageRepo().removeAccountMessages(removedAccount);
     if (currentAccount.getValue() != null) {
       /*
       If the current account is the same as the account being removed, then switch to the first
@@ -143,7 +107,7 @@ public class MessagesActivityViewModel extends AndroidViewModel {
       to reset shared prefs and go back to login activity.
        */
       if (currentAccount.getValue().getUsername().equals(removedAccount.getUsername())) {
-        userRepo.getAccounts().observeForever(new Observer<List<RedditAccount>>() {
+        dataModel.getUserRepo().getAccounts().observeForever(new Observer<List<RedditAccount>>() {
           @Override
           public void onChanged(@Nullable List<RedditAccount> redditAccounts) {
             if (redditAccounts != null) {
@@ -168,7 +132,7 @@ public class MessagesActivityViewModel extends AndroidViewModel {
   public void setAccountIsNew(boolean isNew) {
     if (currentAccount.getValue() != null) {
       currentAccount.getValue().setAccountIsNew(isNew);
-      userRepo.updateAccount(currentAccount.getValue());
+      dataModel.getUserRepo().updateAccount(currentAccount.getValue());
     }
   }
 

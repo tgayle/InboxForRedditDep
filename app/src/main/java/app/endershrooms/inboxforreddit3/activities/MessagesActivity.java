@@ -53,9 +53,9 @@ public class MessagesActivity extends BaseActivity {
     drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
     accountsListAdapter = new AccountsListAdapter(getAccountListInteractionListener());
     drawerAccountSwitcher.setAdapter(accountsListAdapter);
-    model.getAccountsAsPagedList().observe(this, list -> accountsListAdapter.submitList(list));
+    model.getDataModel().getAccountsAsPagedList().observe(this, list -> accountsListAdapter.submitList(list));
 
-    model.getCurrentUserName().observe(this, name -> {
+    model.getDataModel().getCurrentUserName().observe(this, name -> {
           if (model.shouldReturnToLoginScreen(name)) {
             finish();
             Intent goBackToLogin = new Intent(this, EntryLoginActivity.class);
@@ -64,7 +64,7 @@ public class MessagesActivity extends BaseActivity {
     });
 
     AtomicReference<RedditAccount> currentAccount = new AtomicReference<>();
-    model.getCurrentAccount().observe(this, newAccount -> {
+    model.getDataModel().getCurrentAccount().observe(this, newAccount -> {
       if (newAccount != null && shouldCurrentAccountBeReplaced(currentAccount.get(), newAccount)) {
         currentAccount.set(newAccount);
         drawerUsernameTv.setText(newAccount.getUsername());
@@ -90,7 +90,7 @@ public class MessagesActivity extends BaseActivity {
       Fragment conversationFragment = getSupportFragmentManager().findFragmentByTag(CONVERSATION_FRAG_TAG);
       if (parent != null) {
         transaction
-            .add(R.id.messages_activity_fragholder, ConversationViewFragment.newInstance(), CONVERSATION_FRAG_TAG)
+            .add(R.id.messages_activity_fragholder, ConversationViewFragment.newInstance(parent), CONVERSATION_FRAG_TAG)
             .addToBackStack(null);
       } else {
         if (conversationFragment != null) {

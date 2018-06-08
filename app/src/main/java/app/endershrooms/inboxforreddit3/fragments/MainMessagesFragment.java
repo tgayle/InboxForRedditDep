@@ -17,13 +17,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.Toast;
 import app.endershrooms.inboxforreddit3.MiscFuncs;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.adapters.ConversationPreviewAdapter;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel.LoadingStatusEnum;
+import app.endershrooms.inboxforreddit3.viewmodels.model.MessagesActivityDataModel;
 import app.endershrooms.inboxforreddit3.views.CustomLinearLayoutManager;
+import app.endershrooms.inboxforreddit3.views.UnreadMessageButtonView;
 
 public class MainMessagesFragment extends BaseFragment {
 
@@ -47,7 +50,8 @@ public class MainMessagesFragment extends BaseFragment {
   public void onActivityCreated(@Nullable Bundle savedInstanceState) {
     super.onActivityCreated(savedInstanceState);
     viewModel = ViewModelProviders.of(getActivity()).get(MessagesActivityViewModel.class);
-    RedditAccount currentAccount = viewModel.getCurrentAccount().getValue();
+    MessagesActivityDataModel dataModel = viewModel.getDataModel();
+    RedditAccount currentAccount = dataModel.getCurrentAccount().getValue();
 
     //Setup views
     messageRv = (RecyclerView) getView().findViewById(R.id.messages_frag_message_rv);
@@ -68,6 +72,30 @@ public class MainMessagesFragment extends BaseFragment {
       MiscFuncs.smartScrollToTop(messageRv, 15);
     });
 
+    UnreadMessageButtonView unreadMessageButtonView = toolbar.findViewById(R.id.messages_fragment_toolbar_unreadmsgs_view);
+    unreadMessageButtonView.hide();
+    unreadMessageButtonView.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View view) { //TODO: mark messages as unread.
+        new AlertDialog.Builder(getContext())
+            .setTitle("Mark all messages as read?")
+            .setPositiveButton("Confirm",
+                (dialogInterface, i) -> Toast.makeText(getContext(), "Confirmed", Toast.LENGTH_SHORT).show())
+            .setNegativeButton("Cancel",
+                (dialogInterface, i) -> Toast.makeText(getContext(), "Cancelled", Toast.LENGTH_SHORT).show())
+            .show();
+
+      }
+    });
+    dataModel.getUnreadMessagesAsList(currentAccount).observe(this, messages -> {
+      if (messages != null) {
+        unreadMessageButtonView.setUnreadMessages(messages.size());
+      } else {
+        unreadMessageButtonView.setUnreadMessages(null);
+      }
+    });
+
+
     setToolbarBackButton(toolbar, new OnClickListener() {
       @Override
       public void onClick(View view) {
@@ -80,7 +108,7 @@ public class MainMessagesFragment extends BaseFragment {
 
     swipeRefreshLayout.setOnRefreshListener(() -> startRefresh());
 
-    viewModel.getMessagesForConversationView().observe(MainMessagesFragment.this, conversations -> {
+    dataModel.getMessagesForConversationView().observe(MainMessagesFragment.this, conversations -> {
       messageConversationAdapter.submitList(conversations);
       //Scroll to top when we update the list.
       if (messageConversationAdapter.getItemCount() != 0) {
@@ -159,7 +187,6 @@ public class MainMessagesFragment extends BaseFragment {
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
 
-    //TODO: List number of unread messages.
     //TODO: Replying to messages
     //TODO: Marking messages as read on open or reply
     //TODO: Message notifications

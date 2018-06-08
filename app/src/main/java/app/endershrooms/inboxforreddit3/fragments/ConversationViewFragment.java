@@ -17,6 +17,7 @@ import app.endershrooms.inboxforreddit3.adapters.ConversationFullAdapter;
 import app.endershrooms.inboxforreddit3.models.reddit.Message;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel;
+import app.endershrooms.inboxforreddit3.viewmodels.model.MessagesActivityDataModel;
 import app.endershrooms.inboxforreddit3.views.CustomLinearLayoutManager;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -24,20 +25,36 @@ public class ConversationViewFragment extends BaseFragment {
 
   AtomicBoolean didFirstLoad = new AtomicBoolean(false);
   Toolbar toolbarLayout;
+  String parentMessageName;
 
+  public static final String MESSAGE_PARENT_NAME_KEY = "MESSAGE_PARENT_NAME_KEY";
   public ConversationViewFragment() {
     // Required empty public constructor
   }
 
-  public static ConversationViewFragment newInstance() {
-    return new ConversationViewFragment();
+  public static ConversationViewFragment newInstance(String parentMessageName) {
+    ConversationViewFragment fragment = new ConversationViewFragment();
+    Bundle args = new Bundle();
+    args.putString(MESSAGE_PARENT_NAME_KEY, parentMessageName);
+    fragment.setArguments(args);
+    return fragment;
+  }
+
+  @Override
+  public void onCreate(@Nullable Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    if (getArguments() != null) {
+      parentMessageName = getArguments().getString(MESSAGE_PARENT_NAME_KEY);
+    }
   }
 
   @Override
   public void onActivityCreated(@Nullable Bundle savedInstanceState) {
     super.onActivityCreated(savedInstanceState);
-    MessagesActivityViewModel model = ViewModelProviders.of(getActivity()).get(MessagesActivityViewModel.class);
-    RedditAccount currentAccount = model.getCurrentAccount().getValue();
+    MessagesActivityViewModel activityModel = ViewModelProviders.of(getActivity()).get(MessagesActivityViewModel.class);
+    MessagesActivityDataModel dataModel = activityModel.getDataModel();
+
+    RedditAccount currentAccount = dataModel.getCurrentAccount().getValue();
     Log.d("ConversationViewFrag", "Current account is " + currentAccount);
     RecyclerView messagesRv = getView().findViewById(R.id.conversation_fragment_messages_list);
     messagesRv.setLayoutManager(new CustomLinearLayoutManager(getContext()));
@@ -57,7 +74,7 @@ public class ConversationViewFragment extends BaseFragment {
       return true;
     });
 
-    model.getAllConversationMessagesPaged(currentAccount, model.getCurrentConversationName().getValue())
+    dataModel.getAllConversationMessagesPaged(currentAccount, parentMessageName)
     .observe(this, list -> {
       adapter.submitList(list);
       messagesRv.scrollToPosition((adapter.getItemCount() == 0) ? 0 : adapter.getItemCount() - 1);

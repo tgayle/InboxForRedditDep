@@ -41,6 +41,15 @@
     android:background="@color/colorPrimary"
     app:layout_constraintTop_toTopOf="parent"
     app:titleTextColor="#fff"
-    android:id="@+id/main_messages_frag_toolbar"/>
+    android:id="@+id/main_messages_frag_toolbar">
+
+    <app.endershrooms.inboxforreddit3.views.UnreadMessageButtonView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:id="@+id/messages_fragment_toolbar_unreadmsgs_view"
+      android:layout_gravity="right"
+      android:layout_marginEnd="16dp"/>
+
+  </android.support.v7.widget.Toolbar>
 
 </android.support.constraint.ConstraintLayout>

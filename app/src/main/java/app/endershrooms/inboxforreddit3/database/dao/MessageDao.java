@@ -87,8 +87,12 @@ public interface MessageDao {
   public LiveData<Message> getUnreadMessagesForAccount(String account);
 
   @Query(SELECT_ALL_UNREAD_MESSAGES_FOR_ACCOUNT)
+  public LiveData<List<Message>> getUnreadMessagesAsListForAccount(String account);
+
+  @Query(SELECT_ALL_UNREAD_MESSAGES_FOR_ACCOUNT)
   public DataSource.Factory<Integer, Message> getUnreadMessagesForAccountPagable(String account);
 
   @Query(DELETE_ALL_MESSAGES_FOR_ACCOUNT)
   public int deleteAllMessagesForAccount(String username);
+
 }
