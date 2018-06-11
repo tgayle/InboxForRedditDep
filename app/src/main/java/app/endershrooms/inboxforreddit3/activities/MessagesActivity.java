@@ -4,8 +4,6 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.DrawerLayout.SimpleDrawerListener;
@@ -16,31 +14,36 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.adapters.AccountsListAdapter;
-import app.endershrooms.inboxforreddit3.fragments.ConversationViewFragment;
-import app.endershrooms.inboxforreddit3.fragments.MainMessagesFragment;
+import app.endershrooms.inboxforreddit3.conductor.MainMessagesController;
 import app.endershrooms.inboxforreddit3.interfaces.OnAccountListInteraction;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel;
+import com.bluelinelabs.conductor.Conductor;
+import com.bluelinelabs.conductor.Router;
+import com.bluelinelabs.conductor.RouterTransaction;
 
 /**
  * Created by Travis on 1/20/2018.
  */
 
-public class MessagesActivity extends BaseActivity {
+public class MessagesActivity extends BaseActivity implements OnAccountListInteraction {
 
-  public static final String MESSAGES_FRAG_TAG = "messagesFrag";
-  public static final String CONVERSATION_FRAG_TAG = "conversationFrag";
   AccountsListAdapter accountsListAdapter;
   MessagesActivityViewModel model;
 
   DrawerLayout drawer;
+  private Router router;
 
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_messages_with_drawer);
-
     model = ViewModelProviders.of(this).get(MessagesActivityViewModel.class);
+
+    router = Conductor.attachRouter(this, findViewById(R.id.messages_activity_fragholder), savedInstanceState);
+    if (!router.hasRootController()) {
+      router.setRoot(RouterTransaction.with(new MainMessagesController()));
+    }
 
     ImageButton drawerExpandAccountsBtn = (ImageButton) findViewById(R.id.drawer_expandusers_btn);
     View drawerHeader = findViewById(R.id.main_drawer_navheader);
@@ -49,7 +52,7 @@ public class MessagesActivity extends BaseActivity {
     TextView drawerUsernameTv = findViewById(R.id.main_drawer_navheader_username);
 
     drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-    accountsListAdapter = new AccountsListAdapter(getAccountListInteractionListener());
+    accountsListAdapter = new AccountsListAdapter(this);
     drawerAccountSwitcher.setAdapter(accountsListAdapter);
     model.getDataModel().getAccountsAsPagedList().observe(this, list -> accountsListAdapter.submitList(list));
 
@@ -67,27 +70,6 @@ public class MessagesActivity extends BaseActivity {
       }
     });
 
-    getSupportFragmentManager().beginTransaction()
-        .add(R.id.messages_activity_fragholder, MainMessagesFragment.newInstance())
-        .commit();
-
-    model.getCurrentConversationName().observe(this, parent -> {
-      FragmentTransaction transaction = getSupportFragmentManager()
-          .beginTransaction()
-          .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_right, R.anim.slide_in_right, R.anim.slide_out_right);
-      Fragment conversationFragment = getSupportFragmentManager().findFragmentByTag(CONVERSATION_FRAG_TAG);
-      if (parent != null) {
-        transaction
-            .add(R.id.messages_activity_fragholder, ConversationViewFragment.newInstance(parent), CONVERSATION_FRAG_TAG)
-            .addToBackStack(null);
-      } else {
-        if (conversationFragment != null) {
-          transaction.remove(conversationFragment);
-        }
-      }
-      transaction.commit();
-    });
-
     drawerHeader.setOnClickListener(view -> {
       if (drawerAccountSwitcher.getVisibility() == View.GONE) {
         drawerAccountSwitcher.setVisibility(View.VISIBLE);
@@ -100,33 +82,25 @@ public class MessagesActivity extends BaseActivity {
 
   }
 
-  private OnAccountListInteraction getAccountListInteractionListener() {
-    return new OnAccountListInteraction() {
-      @Override
-      public void onAccountSelected(RedditAccount account) {
-        drawer.addDrawerListener(new SimpleDrawerListener() {
-          @Override
-          public void onDrawerClosed(View drawerView) {
-            super.onDrawerClosed(drawerView);
-            drawer.removeDrawerListener(this);
-            model.initAccountSwitch(account);
-          }
-        });
-        drawer.closeDrawer(GravityCompat.START);
-      }
 
+  @Override
+  public void onAccountSelected(RedditAccount account) {
+    drawer.addDrawerListener(new SimpleDrawerListener() {
       @Override
-      public void onAccountRemoved(RedditAccount account) {
-        model.removeAccount(account);
+      public void onDrawerClosed(View drawerView) {
+        super.onDrawerClosed(drawerView);
+        drawer.removeDrawerListener(this);
+        model.initAccountSwitch(account);
       }
-    };
+    });
+    drawer.closeDrawer(GravityCompat.START);
   }
 
   @Override
-  protected void onRestart() {
-    super.onRestart();
-    model.setCurrentConversationName(null);
+  public void onAccountRemoved(RedditAccount account) {
+    model.removeAccount(account);
   }
+
 
   @Override
   protected void onResume() {
@@ -139,7 +113,10 @@ public class MessagesActivity extends BaseActivity {
     if (drawer.isDrawerOpen(GravityCompat.START)) {
       drawer.closeDrawer(GravityCompat.START);
     } else {
-      super.onBackPressed();
+      if (!router.handleBack()) {
+        super.onBackPressed();
+      }
     }
   }
+
 }

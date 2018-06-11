@@ -1,14 +1,11 @@
-package app.endershrooms.inboxforreddit3.fragments;
-
+package app.endershrooms.inboxforreddit3.conductor;
 
 import android.arch.lifecycle.ViewModelProviders;
-import android.graphics.Color;
-import android.os.Bundle;
+import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AlertDialog.Builder;
 import android.support.v7.widget.RecyclerView;
@@ -26,39 +23,44 @@ import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel.Loa
 import app.endershrooms.inboxforreddit3.viewmodels.model.MessagesActivityDataModel;
 import app.endershrooms.inboxforreddit3.views.CustomLinearLayoutManager;
 import app.endershrooms.inboxforreddit3.views.UnreadMessageButtonView;
+import com.bluelinelabs.conductor.RouterTransaction;
+import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
 
-public class MainMessagesFragment extends BaseFragment {
+public class MainMessagesController extends LifecycleActivityController {
+  private ConversationPreviewAdapter messageConversationAdapter;
+  private SwipeRefreshLayout swipeRefreshLayout;
+  private RecyclerView messageRv;
+  private UnreadMessageButtonView unreadMessageButtonView;
+  private Toolbar toolbar;
 
+  private MessagesActivityViewModel viewModel;
 
-  ConversationPreviewAdapter messageConversationAdapter;
-  SwipeRefreshLayout swipeRefreshLayout;
-  RecyclerView messageRv;
-  UnreadMessageButtonView unreadMessageButtonView;
-  Toolbar toolbar;
-
-  MessagesActivityViewModel viewModel;
-
-
-  public MainMessagesFragment() {
-    // Required empty public constructor
+  public MainMessagesController() {
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
   }
 
-  public static MainMessagesFragment newInstance() {
-    return new MainMessagesFragment();
-  }
-
+  @NonNull
   @Override
-  public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-    super.onActivityCreated(savedInstanceState);
-    viewModel = ViewModelProviders.of(getActivity()).get(MessagesActivityViewModel.class);
+  protected View onCreateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
+    //TODO: Replying to messages
+    //TODO: Marking messages as read on open or reply
+    //TODO: Message notifications
+    //TODO: Viewing images and webpages in here.
+
+    View view = inflater.inflate(R.layout.activity_messages_fragment, container,false);
+    viewModel = ViewModelProviders.of(getLifecycleActivity()).get(MessagesActivityViewModel.class);
     MessagesActivityDataModel dataModel = viewModel.getDataModel();
 
     //Setup views
-    prepareViews();
-    prepareLogic();
+    prepareViews(view);
+    prepareLogic(view);
 
-    messageConversationAdapter = new ConversationPreviewAdapter(
-        message -> viewModel.setCurrentConversationName(message.getParentMessageName())); //reset adapter
+    messageConversationAdapter = new ConversationPreviewAdapter(message -> {
+      getRouter()
+          .pushController(RouterTransaction.with(new ConversationViewController(message.getParentMessageName()))
+          .pushChangeHandler(new HorizontalChangeHandler())
+          .popChangeHandler(new HorizontalChangeHandler()));
+    });
     messageRv.setAdapter(messageConversationAdapter);
 
 
@@ -70,7 +72,7 @@ public class MainMessagesFragment extends BaseFragment {
       }
     });
 
-    dataModel.getMessagesForConversationView().observe(MainMessagesFragment.this, conversations -> {
+    dataModel.getMessagesForConversationView().observe(this, conversations -> {
       messageConversationAdapter.submitList(conversations);
       Log.d("GetMessageConvo", "Size: " + (conversations != null ? conversations.size() : conversations));
       //Scroll to top when we update the list.
@@ -80,7 +82,6 @@ public class MainMessagesFragment extends BaseFragment {
     dataModel.getCurrentAccount().observe(this, currentAccount -> {
       if (currentAccount != null) {
         scrollRecyclerViewToTop(messageRv);
-
         if (currentAccount.getAccountIsNew()) { //Load all messages if new
           viewModel.loadAllMessages();
           viewModel.setAccountIsNew(false);
@@ -90,39 +91,38 @@ public class MainMessagesFragment extends BaseFragment {
         }
       }
     });
+    return view;
   }
 
-  void prepareViews() {
-    swipeRefreshLayout = (SwipeRefreshLayout) getView().findViewById(R.id.activities_messages_swiperefresh);
-    messageRv = (RecyclerView) getView().findViewById(R.id.messages_frag_message_rv);
-    CustomLinearLayoutManager linearLayoutManager = new CustomLinearLayoutManager(getContext());
+  private void prepareViews(View rootView) {
+    swipeRefreshLayout = rootView.findViewById(R.id.activities_messages_swiperefresh);
+    messageRv = rootView.findViewById(R.id.messages_frag_message_rv);
+    CustomLinearLayoutManager linearLayoutManager = new CustomLinearLayoutManager(rootView.getContext());
     messageRv.setLayoutManager(linearLayoutManager);
     linearLayoutManager.setReverseLayout(true);
     linearLayoutManager.setStackFromEnd(true);
 
-    toolbar = getView().findViewById(R.id.main_messages_frag_toolbar);
+    toolbar = rootView.findViewById(R.id.main_messages_frag_toolbar);
     toolbar.setTitle("Messages");
 
     unreadMessageButtonView = toolbar.findViewById(R.id.messages_fragment_toolbar_unreadmsgs_view);
     unreadMessageButtonView.hide();
   }
 
-  void prepareLogic() {
+  private void prepareLogic(View rootView) {
     swipeRefreshLayout.setOnRefreshListener(this::startRefresh);
-    prepareLoadingStatus();
+    prepareLoadingStatus(rootView);
 
-    toolbar.setOnClickListener(view -> {
-      MiscFuncs.smartScrollToTop(messageRv, 15);
-    });
+    toolbar.setOnClickListener(view -> MiscFuncs.smartScrollToTop(messageRv, 15));
 
     unreadMessageButtonView.setOnClickListener(view -> {
-      new Builder(getContext())
+      new Builder(rootView.getContext())
           .setTitle("Mark all messages as read?")
           .setPositiveButton("Confirm",
               (dialogInterface, i) -> {
-                Snackbar clearing = Snackbar.make(getView(), "Clearing messages...", Snackbar.LENGTH_LONG);
+                Snackbar clearing = Snackbar.make(rootView, "Clearing messages...", Snackbar.LENGTH_LONG);
                 clearing.show();
-                Snackbar finished = Snackbar.make(getView(), "All messages marked as read!", Snackbar.LENGTH_SHORT);
+                Snackbar finished = Snackbar.make(rootView, "All messages marked as read!", Snackbar.LENGTH_SHORT);
                 viewModel.markAllMessagesAsRead().observe(this, isFinished -> {
                   if (isFinished != null && isFinished) {
                     clearing.dismiss();
@@ -132,19 +132,19 @@ public class MainMessagesFragment extends BaseFragment {
               })
           .setNegativeButton("Cancel",
               (dialogInterface, i) -> {
-                Toast.makeText(getContext(), "Cancelled", Toast.LENGTH_SHORT).show();
+                Toast.makeText(rootView.getContext(), "Cancelled", Toast.LENGTH_SHORT).show();
               })
           .show();
     });
 
   }
 
-  void startRefresh() {
+  private void startRefresh() {
     viewModel.setLoadingStatus(LoadingStatusEnum.LOADING);
 
     viewModel.loadNewestMessages().observe(this, stringThrowableResponseWithError -> {
       if (stringThrowableResponseWithError != null) {
-        if ((stringThrowableResponseWithError.getData() == null || stringThrowableResponseWithError.getData().equals("")) && getView() != null) {
+        if ((stringThrowableResponseWithError.getData() == null || stringThrowableResponseWithError.getData().equals(""))) {
           Log.d("LoadingStatus", "LoadNewest is " + stringThrowableResponseWithError.getData());
           viewModel.setLoadingStatus(LoadingStatusEnum.DONE);
         }
@@ -152,12 +152,12 @@ public class MainMessagesFragment extends BaseFragment {
     });
   }
 
-  void prepareLoadingStatus() {
-    Snackbar errorSnack = Snackbar.make( getActivity().findViewById(R.id.messages_activity_fragholder),
+  private void prepareLoadingStatus(View rootView) {
+    Snackbar errorSnack = Snackbar.make( rootView,
         "There was an issue...", Snackbar.LENGTH_INDEFINITE);
 
     viewModel.getLoadingStatus().observe(this, newStatus -> {
-      if (getView() != null && newStatus != null) {
+      if (newStatus != null) {
         Log.d("LoadingStatus", "Current status is " + newStatus.getData());
         errorSnack.setAction(null, null); //reset in case it changed
         switch (newStatus.getData()) {
@@ -168,7 +168,7 @@ public class MainMessagesFragment extends BaseFragment {
           case ERROR:
             swipeRefreshLayout.setRefreshing(false);
             errorSnack.setAction("View", view -> {
-              createAlertDialog(newStatus.getError(), null).show();
+              createAlertDialog(rootView.getContext(), newStatus.getError(), null).show();
             });
             errorSnack.show();
             break;
@@ -181,37 +181,19 @@ public class MainMessagesFragment extends BaseFragment {
     });
   }
 
-  void scrollRecyclerViewToTop(RecyclerView rv) {
+  private void scrollRecyclerViewToTop(RecyclerView rv) {
     if (messageConversationAdapter != null && messageConversationAdapter.getItemCount() != 0) {
       rv.scrollToPosition(messageConversationAdapter.getItemCount() - 1);
     }
   }
 
-  void setActionbarDrawerCommunication(DrawerLayout drawer, Toolbar toolbar) {
-    Log.d("MessagesFrag", "Actionbar set up");
-    ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(getActivity(), drawer, toolbar, R.string.drawer_open, R.string.drawer_close);
-    drawer.addDrawerListener(actionBarDrawerToggle);
-    actionBarDrawerToggle.getDrawerArrowDrawable().setColor(Color.WHITE);
-    actionBarDrawerToggle.syncState();
-  }
-
-  private AlertDialog createAlertDialog(String message, @Nullable AlertDialog.OnClickListener onClickListener) {
-    return new AlertDialog.Builder(getContext())
+  private AlertDialog createAlertDialog(Context context, String message, @Nullable AlertDialog.OnClickListener onClickListener) {
+    return new AlertDialog.Builder(context)
         .setMessage(message)
         .setTitle("Error")
         .setPositiveButton("Confirm", onClickListener)
         .create();
   }
 
-  @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container,
-      Bundle savedInstanceState) {
 
-    //TODO: Replying to messages
-    //TODO: Marking messages as read on open or reply
-    //TODO: Message notifications
-    //TODO: Viewing images and webpages in here.
-
-    return inflater.inflate(R.layout.activity_messages_fragment, container,false);
-  }
 }
