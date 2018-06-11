@@ -156,7 +156,7 @@ public class APIManager {
     updateUserToken(user, () -> {
       StringBuilder allIdsAsOneString = new StringBuilder();
       for (String id : ids) {
-        allIdsAsOneString.append(id + ",");
+        allIdsAsOneString.append(id).append(",");
       }
       redditService.markMessageAsRead(user.getAuthentication(), allIdsAsOneString.toString())
           .observeOn(Schedulers.io())
