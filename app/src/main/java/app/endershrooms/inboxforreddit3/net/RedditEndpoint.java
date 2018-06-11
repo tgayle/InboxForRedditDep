@@ -4,6 +4,7 @@ import app.endershrooms.inboxforreddit3.account.Authentication;
 import app.endershrooms.inboxforreddit3.net.model.JSONLoginResponse;
 import app.endershrooms.inboxforreddit3.net.model.JsonMeResponse;
 import app.endershrooms.inboxforreddit3.net.model.MessagesJSONResponse;
+import app.endershrooms.inboxforreddit3.net.model.ReadMessageResponse;
 import io.reactivex.Observable;
 import retrofit2.http.FieldMap;
 import retrofit2.http.FormUrlEncoded;
@@ -47,4 +48,9 @@ public interface RedditEndpoint {
       @Header("Authorization") String basicAuthentication,
       @Query("token") String token,
       @Query("token_type_hint") String tokenType);
+
+  @POST("api/read_message")
+  Observable<ReadMessageResponse> markMessageAsRead(
+      @Header("Authorization") String token,
+      @Query("id") String messageFullName);
 }

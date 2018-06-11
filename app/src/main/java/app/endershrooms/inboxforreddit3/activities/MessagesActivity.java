@@ -1,7 +1,5 @@
 package app.endershrooms.inboxforreddit3.activities;
 
-import static app.endershrooms.inboxforreddit3.MiscFuncs.shouldCurrentAccountBeReplaced;
-
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.DrawerLayout.SimpleDrawerListener;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -22,7 +21,6 @@ import app.endershrooms.inboxforreddit3.fragments.MainMessagesFragment;
 import app.endershrooms.inboxforreddit3.interfaces.OnAccountListInteraction;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Created by Travis on 1/20/2018.
@@ -63,25 +61,15 @@ public class MessagesActivity extends BaseActivity {
           }
     });
 
-    AtomicReference<RedditAccount> currentAccount = new AtomicReference<>();
-    model.getDataModel().getCurrentAccount().observe(this, newAccount -> {
-      if (newAccount != null && shouldCurrentAccountBeReplaced(currentAccount.get(), newAccount)) {
-        currentAccount.set(newAccount);
-        drawerUsernameTv.setText(newAccount.getUsername());
-        Fragment messagesFragment = getSupportFragmentManager()
-            .findFragmentByTag(MESSAGES_FRAG_TAG);
-        FragmentTransaction fm = getSupportFragmentManager().beginTransaction();
-
-        if (messagesFragment == null) { //Temporarily do nothing if fragment already loaded.
-          fm.add(R.id.messages_activity_fragholder, MainMessagesFragment.newInstance(),
-              MESSAGES_FRAG_TAG);
-        } else {
-          fm.replace(R.id.messages_activity_fragholder, MainMessagesFragment.newInstance(),
-              MESSAGES_FRAG_TAG);
-        }
-        fm.commit();
+    model.getDataModel().getCurrentAccount().observe(this, redditAccount ->{
+      if (redditAccount != null) {
+        drawerUsernameTv.setText(redditAccount.getUsername());
       }
     });
+
+    getSupportFragmentManager().beginTransaction()
+        .add(R.id.messages_activity_fragholder, MainMessagesFragment.newInstance())
+        .commit();
 
     model.getCurrentConversationName().observe(this, parent -> {
       FragmentTransaction transaction = getSupportFragmentManager()
@@ -116,7 +104,14 @@ public class MessagesActivity extends BaseActivity {
     return new OnAccountListInteraction() {
       @Override
       public void onAccountSelected(RedditAccount account) {
-        model.initAccountSwitch(account);
+        drawer.addDrawerListener(new SimpleDrawerListener() {
+          @Override
+          public void onDrawerClosed(View drawerView) {
+            super.onDrawerClosed(drawerView);
+            drawer.removeDrawerListener(this);
+            model.initAccountSwitch(account);
+          }
+        });
         drawer.closeDrawer(GravityCompat.START);
       }
 

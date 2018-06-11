@@ -2,6 +2,7 @@ package app.endershrooms.inboxforreddit3.repositories;
 
 import android.annotation.SuppressLint;
 import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MediatorLiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.paging.LivePagedListBuilder;
 import android.arch.paging.PagedList;
@@ -83,6 +84,10 @@ public class MessagesRepository {
     return new LivePagedListBuilder<>(messageDao.getUnreadMessagesForAccountPagable(account.getUsername()), 20).build();
   }
 
+  public LiveData<PagedList<Message>> getMessagesForConversationPaged(RedditAccount user, String parentName) {
+    return new LivePagedListBuilder<>(messageDao.getAllMessagesFromConversationAsPaged(user.getUsername(), parentName), 20).build();
+  }
+
   public LiveData<Message> getUnreadMessagesForAccount(RedditAccount acc) {
     return messageDao.getUnreadMessagesForAccount(acc.getUsername());
   }
@@ -95,7 +100,6 @@ public class MessagesRepository {
    return messageDao.getAllUserMessagesAsc(user.getUsername());
   }
 
-
   public void removeAccountMessages(RedditAccount removedAccount) {
     Single.fromCallable(() -> messageDao.deleteAllMessagesForAccount(removedAccount.getUsername()))
         .subscribeOn(Schedulers.io())
@@ -104,7 +108,19 @@ public class MessagesRepository {
         });
   }
 
-  public LiveData<PagedList<Message>> getMessagesForConversationPaged(RedditAccount user, String parentName) {
-    return new LivePagedListBuilder<>(messageDao.getAllMessagesFromConversationAsPaged(user.getUsername(), parentName), 20).build();
+  public LiveData<Boolean> markAllMessagesAsRead(RedditAccount account) {
+    MediatorLiveData<Boolean> onMessagesFinishedMarkRead = new MediatorLiveData<>();
+    messageDao.getNamesOfAllUnreadMessagesForAccount(account.getUsername())
+        .observeOn(Schedulers.io())
+        .subscribeOn(Schedulers.io())
+        .subscribe(names -> {
+          onMessagesFinishedMarkRead.addSource(
+              APIManager.get().markAllUnreadMessagesAsRead(account, names),
+              result -> onMessagesFinishedMarkRead.setValue(result));
+          Single.fromCallable(() -> messageDao.markAllUnreadMessagesAsReadForAccount(account.getUsername()))
+              .observeOn(Schedulers.io())
+              .subscribe();
+        });
+    return onMessagesFinishedMarkRead;
   }
 }

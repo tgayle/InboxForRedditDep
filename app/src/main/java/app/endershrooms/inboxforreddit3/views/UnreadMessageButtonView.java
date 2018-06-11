@@ -41,12 +41,12 @@ public class UnreadMessageButtonView extends FrameLayout {
 
   public void hide() {
     setClickable(false);
-    setVisibility(INVISIBLE);
+    animate().setDuration(75).alpha(0f).withEndAction(() -> setVisibility(INVISIBLE)).start();
   }
 
   public void show() {
     setClickable(true);
-    setVisibility(VISIBLE);
+    animate().setDuration(100).alpha(1f).withStartAction(() -> setVisibility(VISIBLE)).start();
   }
 
   @Override

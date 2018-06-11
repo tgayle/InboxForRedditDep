@@ -3,6 +3,8 @@ package app.endershrooms.inboxforreddit3.net;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 import android.annotation.SuppressLint;
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MutableLiveData;
 import android.support.annotation.StringDef;
 import android.util.Log;
 import app.endershrooms.inboxforreddit3.Singleton;
@@ -14,6 +16,7 @@ import app.endershrooms.inboxforreddit3.net.model.MessagesJSONResponse;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 import java.lang.annotation.Retention;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -23,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class APIManager {
 
   private static APIManager apiManager;
+  private RedditEndpoint redditService = Singleton.get().getRedditApi();
 
   public static synchronized APIManager get() {
     if (apiManager == null) {
@@ -58,8 +62,8 @@ public class APIManager {
 
     updateUserToken(user, () -> {
       Observable<MessagesJSONResponse> messageLoader = beforeOrAfter.equals("before") ?
-          Singleton.get().getRedditApi().getMessagesWithBefore(user.getAuthentication(), where, limit, beforeAfter) :
-          Singleton.get().getRedditApi().getMessagesWithAfter(user.getAuthentication(), where, limit, beforeAfter);
+          redditService.getMessagesWithBefore(user.getAuthentication(), where, limit, beforeAfter) :
+          redditService.getMessagesWithAfter(user.getAuthentication(), where, limit, beforeAfter);
 
       messageLoader
           .observeOn(Schedulers.io())
@@ -101,19 +105,6 @@ public class APIManager {
       }, errorListener);
   }
 
-  public void downloadAllFutureMessagesAllLocations(RedditAccount user, int limit, String before, OnCompleteMessageLoad onCompleteMessageLoad, OnRedditApiError errorListener) {
-    downloadAllFutureMessages(user, "inbox", limit, before, onCompleteMessageLoad, errorListener);
-    downloadAllFutureMessages(user, "sent", limit, before, onCompleteMessageLoad, errorListener);
-    downloadUnreadMessages(user, limit, null, onCompleteMessageLoad, errorListener);
-  }
-
-  //After must be an empty string instead of null here to make sure progress is properly sent to the rest of the app.
-  public void downloadAllPastMessagesAllLocations(RedditAccount user, int limit, OnCompleteMessageLoad onCompleteMessageLoad, OnRedditApiError errorListener) {
-    OnCompleteMessageLoad collector = completeLoadCollector(2, onCompleteMessageLoad);
-    downloadAllPastMessages(user, "inbox", limit, "", collector, errorListener);
-    downloadAllPastMessages(user, "sent", limit, "", collector, errorListener);
-  }
-
   private OnCompleteMessageLoad completeLoadCollector(int numExpectedToFinish, OnCompleteMessageLoad finalCaller) {
     AtomicInteger numFinished = new AtomicInteger(0);
     return new OnCompleteMessageLoad() {
@@ -145,6 +136,37 @@ public class APIManager {
         onCompleteMessageLoad.onComplete("before", mostRecentBefore.current, mostRecentNumLoaded.get());
       }
     }, errorListener);
+  }
+
+  //After must be an empty string instead of null here to make sure progress is properly sent to the rest of the app.
+  public void downloadAllPastMessagesAllLocations(RedditAccount user, int limit, OnCompleteMessageLoad onCompleteMessageLoad, OnRedditApiError errorListener) {
+    OnCompleteMessageLoad collector = completeLoadCollector(2, onCompleteMessageLoad);
+    downloadAllPastMessages(user, "inbox", limit, "", collector, errorListener);
+    downloadAllPastMessages(user, "sent", limit, "", collector, errorListener);
+  }
+
+  public void downloadAllFutureMessagesAllLocations(RedditAccount user, int limit, String before, OnCompleteMessageLoad onCompleteMessageLoad, OnRedditApiError errorListener) {
+    downloadAllFutureMessages(user, "inbox", limit, before, onCompleteMessageLoad, errorListener);
+    downloadAllFutureMessages(user, "sent", limit, before, onCompleteMessageLoad, errorListener);
+    downloadUnreadMessages(user, limit, null, onCompleteMessageLoad, errorListener);
+  }
+
+  public LiveData<Boolean> markAllUnreadMessagesAsRead(RedditAccount user, List<String> ids) {
+    MutableLiveData<Boolean> onCompletedResult = new MutableLiveData<>();
+    updateUserToken(user, () -> {
+      StringBuilder allIdsAsOneString = new StringBuilder();
+      for (String id : ids) {
+        allIdsAsOneString.append(id + ",");
+      }
+      redditService.markMessageAsRead(user.getAuthentication(), allIdsAsOneString.toString())
+          .observeOn(Schedulers.io())
+          .subscribe(onCompleteResponse -> {
+            onCompletedResult.postValue(true);
+          });
+    }, throwable -> {
+
+    });
+    return onCompletedResult;
   }
 
   public interface OnCompleteMessageLoad {

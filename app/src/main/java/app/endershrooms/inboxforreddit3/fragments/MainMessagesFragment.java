@@ -10,18 +10,17 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AlertDialog.Builder;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Toast;
 import app.endershrooms.inboxforreddit3.MiscFuncs;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.adapters.ConversationPreviewAdapter;
-import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel.LoadingStatusEnum;
 import app.endershrooms.inboxforreddit3.viewmodels.model.MessagesActivityDataModel;
@@ -34,6 +33,8 @@ public class MainMessagesFragment extends BaseFragment {
   ConversationPreviewAdapter messageConversationAdapter;
   SwipeRefreshLayout swipeRefreshLayout;
   RecyclerView messageRv;
+  UnreadMessageButtonView unreadMessageButtonView;
+  Toolbar toolbar;
 
   MessagesActivityViewModel viewModel;
 
@@ -51,43 +52,17 @@ public class MainMessagesFragment extends BaseFragment {
     super.onActivityCreated(savedInstanceState);
     viewModel = ViewModelProviders.of(getActivity()).get(MessagesActivityViewModel.class);
     MessagesActivityDataModel dataModel = viewModel.getDataModel();
-    RedditAccount currentAccount = dataModel.getCurrentAccount().getValue();
 
     //Setup views
-    messageRv = (RecyclerView) getView().findViewById(R.id.messages_frag_message_rv);
-    CustomLinearLayoutManager linearLayoutManager = new CustomLinearLayoutManager(getContext());
-    messageRv.setLayoutManager(linearLayoutManager);
-    linearLayoutManager.setReverseLayout(true);
-    linearLayoutManager.setStackFromEnd(true);
+    prepareViews();
+    prepareLogic();
+
     messageConversationAdapter = new ConversationPreviewAdapter(
         message -> viewModel.setCurrentConversationName(message.getParentMessageName())); //reset adapter
     messageRv.setAdapter(messageConversationAdapter);
 
-    swipeRefreshLayout = (SwipeRefreshLayout) getView().findViewById(R.id.activities_messages_swiperefresh);
-    View snackbarView = getActivity().findViewById(R.id.messages_activity_fragholder);
 
-    Toolbar toolbar = getView().findViewById(R.id.main_messages_frag_toolbar);
-    toolbar.setTitle("Messages");
-    toolbar.setOnClickListener(view -> {
-      MiscFuncs.smartScrollToTop(messageRv, 15);
-    });
-
-    UnreadMessageButtonView unreadMessageButtonView = toolbar.findViewById(R.id.messages_fragment_toolbar_unreadmsgs_view);
-    unreadMessageButtonView.hide();
-    unreadMessageButtonView.setOnClickListener(new OnClickListener() {
-      @Override
-      public void onClick(View view) { //TODO: mark messages as unread.
-        new AlertDialog.Builder(getContext())
-            .setTitle("Mark all messages as read?")
-            .setPositiveButton("Confirm",
-                (dialogInterface, i) -> Toast.makeText(getContext(), "Confirmed", Toast.LENGTH_SHORT).show())
-            .setNegativeButton("Cancel",
-                (dialogInterface, i) -> Toast.makeText(getContext(), "Cancelled", Toast.LENGTH_SHORT).show())
-            .show();
-
-      }
-    });
-    dataModel.getUnreadMessagesAsList(currentAccount).observe(this, messages -> {
+    dataModel.getUnreadMessagesAsList().observe(this, messages -> {
       if (messages != null) {
         unreadMessageButtonView.setUnreadMessages(messages.size());
       } else {
@@ -95,34 +70,73 @@ public class MainMessagesFragment extends BaseFragment {
       }
     });
 
-
-    setToolbarBackButton(toolbar, new OnClickListener() {
-      @Override
-      public void onClick(View view) {
-        //TODO:Open drawer.
-      }
-    });
-
-    //Logic
-    prepareLoadingStatus();
-
-    swipeRefreshLayout.setOnRefreshListener(() -> startRefresh());
-
     dataModel.getMessagesForConversationView().observe(MainMessagesFragment.this, conversations -> {
       messageConversationAdapter.submitList(conversations);
+      Log.d("GetMessageConvo", "Size: " + (conversations != null ? conversations.size() : conversations));
       //Scroll to top when we update the list.
-      if (messageConversationAdapter.getItemCount() != 0) {
-        messageRv.scrollToPosition(messageConversationAdapter.getItemCount() - 1);
-      }
+      scrollRecyclerViewToTop(messageRv);
     });
 
-    if (currentAccount.getAccountIsNew()) { //Load all messages if new
-      viewModel.loadAllMessages();
-      viewModel.setAccountIsNew(false);
-    } else {
-      Log.d("MainMessages", "Starting refresh");
-      startRefresh();
-    }
+    dataModel.getCurrentAccount().observe(this, currentAccount -> {
+      if (currentAccount != null) {
+        scrollRecyclerViewToTop(messageRv);
+
+        if (currentAccount.getAccountIsNew()) { //Load all messages if new
+          viewModel.loadAllMessages();
+          viewModel.setAccountIsNew(false);
+        } else {
+          Log.d("MainMessages", "Starting refresh");
+          startRefresh();
+        }
+      }
+    });
+  }
+
+  void prepareViews() {
+    swipeRefreshLayout = (SwipeRefreshLayout) getView().findViewById(R.id.activities_messages_swiperefresh);
+    messageRv = (RecyclerView) getView().findViewById(R.id.messages_frag_message_rv);
+    CustomLinearLayoutManager linearLayoutManager = new CustomLinearLayoutManager(getContext());
+    messageRv.setLayoutManager(linearLayoutManager);
+    linearLayoutManager.setReverseLayout(true);
+    linearLayoutManager.setStackFromEnd(true);
+
+    toolbar = getView().findViewById(R.id.main_messages_frag_toolbar);
+    toolbar.setTitle("Messages");
+
+    unreadMessageButtonView = toolbar.findViewById(R.id.messages_fragment_toolbar_unreadmsgs_view);
+    unreadMessageButtonView.hide();
+  }
+
+  void prepareLogic() {
+    swipeRefreshLayout.setOnRefreshListener(this::startRefresh);
+    prepareLoadingStatus();
+
+    toolbar.setOnClickListener(view -> {
+      MiscFuncs.smartScrollToTop(messageRv, 15);
+    });
+
+    unreadMessageButtonView.setOnClickListener(view -> {
+      new Builder(getContext())
+          .setTitle("Mark all messages as read?")
+          .setPositiveButton("Confirm",
+              (dialogInterface, i) -> {
+                Snackbar clearing = Snackbar.make(getView(), "Clearing messages...", Snackbar.LENGTH_LONG);
+                clearing.show();
+                Snackbar finished = Snackbar.make(getView(), "All messages marked as read!", Snackbar.LENGTH_SHORT);
+                viewModel.markAllMessagesAsRead().observe(this, isFinished -> {
+                  if (isFinished != null && isFinished) {
+                    clearing.dismiss();
+                    finished.show();
+                  }
+                });
+              })
+          .setNegativeButton("Cancel",
+              (dialogInterface, i) -> {
+                Toast.makeText(getContext(), "Cancelled", Toast.LENGTH_SHORT).show();
+              })
+          .show();
+    });
+
   }
 
   void startRefresh() {
@@ -165,6 +179,12 @@ public class MainMessagesFragment extends BaseFragment {
         }
       }
     });
+  }
+
+  void scrollRecyclerViewToTop(RecyclerView rv) {
+    if (messageConversationAdapter != null && messageConversationAdapter.getItemCount() != 0) {
+      rv.scrollToPosition(messageConversationAdapter.getItemCount() - 1);
+    }
   }
 
   void setActionbarDrawerCommunication(DrawerLayout drawer, Toolbar toolbar) {

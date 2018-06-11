@@ -135,6 +135,11 @@ public class Message {
   }
 
   @Override
+  public int hashCode() {
+    return messageName.hashCode() + parentMessageName.hashCode() + messageOwner.hashCode();
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (obj instanceof Message) {
       Message otherMsg = (Message) obj;

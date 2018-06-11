@@ -27,12 +27,17 @@ public interface MessageDao {
       + " FROM messages"
       + " WHERE isNew = 1"
       + " AND messageOwner LIKE :account";
+
+  static final String SELECT_NAMES_OF_ALL_UNREAD_MESSAGES_FOR_ACCOUNT = "SELECT messageName FROM messages WHERE messageOwner LIKE :account AND isNew = 1";
+
   static final String SELECT_FIRST_MESSAGE_FOR_ACCOUNT = "SELECT * FROM messages WHERE messageOwner LIKE :account LIMIT 1";
   static final String SELECT_NEWEST_MESSAGE_FOR_ACCOUNT = "SELECT * FROM messages WHERE messageOwner LIKE :account ORDER BY messageName DESC LIMIT 1";
   static final String SELECT_ALL_MESSAGES_FOR_CONVERSATION_FOR_ACCOUNT = "SELECT * FROM messages WHERE messageOwner LIKE :account AND parentMessageName LIKE :parentname ORDER BY timestamp ASC";
   static final String SELECT_ALL_PARENT_NAMES_FOR_ACCOUNT = "SELECT DISTINCT parentMessageName FROM messages WHERE messageOwner LIKE :account ORDER BY timestamp ASC";
 
-  static final String DELETE_ALL_MESSAGES_FOR_ACCOUNT = "DELETE FROM messages WHERE messageOwner LIKE :username";
+  static final String DELETE_ALL_MESSAGES_FOR_ACCOUNT = "DELETE FROM messages WHERE messageOwner LIKE :account";
+
+  static final String UPDATE_MARK_ALL_UNREAD_MESSAGES_AS_READ_FOR_ACCOUNT = "UPDATE messages SET isNew = 0 WHERE messageOwner LIKE :account AND isNew = 1";
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   public Long insertMessage(Message message);
@@ -89,10 +94,16 @@ public interface MessageDao {
   @Query(SELECT_ALL_UNREAD_MESSAGES_FOR_ACCOUNT)
   public LiveData<List<Message>> getUnreadMessagesAsListForAccount(String account);
 
+  @Query(SELECT_NAMES_OF_ALL_UNREAD_MESSAGES_FOR_ACCOUNT)
+  public Single<List<String>> getNamesOfAllUnreadMessagesForAccount(String account);
+
   @Query(SELECT_ALL_UNREAD_MESSAGES_FOR_ACCOUNT)
   public DataSource.Factory<Integer, Message> getUnreadMessagesForAccountPagable(String account);
 
   @Query(DELETE_ALL_MESSAGES_FOR_ACCOUNT)
-  public int deleteAllMessagesForAccount(String username);
+  public int deleteAllMessagesForAccount(String account);
+
+  @Query(UPDATE_MARK_ALL_UNREAD_MESSAGES_AS_READ_FOR_ACCOUNT)
+  public int markAllUnreadMessagesAsReadForAccount(String account);
 
 }

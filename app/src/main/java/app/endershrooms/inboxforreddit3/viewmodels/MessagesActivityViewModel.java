@@ -21,19 +21,23 @@ import java.util.List;
  */
 
 public class MessagesActivityViewModel extends AndroidViewModel {
-  private MessagesActivityDataModel dataModel = new MessagesActivityDataModel();
+  private MessagesActivityDataModel dataModel;
   private MutableLiveData<String> currentConversationName = new MutableLiveData<>();
   private MutableLiveData<ResponseWithError<LoadingStatusEnum, String>> loadingStatus = new MutableLiveData<>();
   private SharedPreferences sharedPreferences;
-  private MutableLiveData<String> currentUserName = dataModel.getCurrentUserNameAsMutable();
-  private LiveData<RedditAccount> currentAccount = dataModel.getCurrentAccount();
+  private MutableLiveData<String> currentUserName;
+  private LiveData<RedditAccount> currentAccount;
 
   public MessagesActivityViewModel(@NonNull Application application) {
     super(application);
     sharedPreferences = application.getApplicationContext().getSharedPreferences(
         Constants.SHARED_PREFERENCES_MAIN, Context.MODE_PRIVATE);
-
     String sharedPrefUser = sharedPreferences.getString(Constants.SHARED_PREFS_CURRENT_ACC, null);
+
+    dataModel= new MessagesActivityDataModel(sharedPrefUser);
+    currentUserName = dataModel.getCurrentUserNameAsMutable();
+    currentAccount = dataModel.getCurrentAccount();
+
     setCurrentUsername(sharedPrefUser);
   }
 
@@ -134,6 +138,10 @@ public class MessagesActivityViewModel extends AndroidViewModel {
       currentAccount.getValue().setAccountIsNew(isNew);
       dataModel.getUserRepo().updateAccount(currentAccount.getValue());
     }
+  }
+
+  public LiveData<Boolean> markAllMessagesAsRead() {
+    return dataModel.markAllUnreadMessagesAsRead();
   }
 
   public enum LoadingStatusEnum {

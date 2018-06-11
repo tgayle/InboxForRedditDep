@@ -1,9 +1,11 @@
 package app.endershrooms.inboxforreddit3.viewmodels.model;
 
 import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MediatorLiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Transformations;
 import android.arch.paging.PagedList;
+import app.endershrooms.inboxforreddit3.MiscFuncs;
 import app.endershrooms.inboxforreddit3.models.reddit.Message;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import app.endershrooms.inboxforreddit3.repositories.MessagesRepository;
@@ -14,12 +16,26 @@ public class MessagesActivityDataModel {
   private UserRepository userRepo = UserRepository.get();
   private MessagesRepository messageRepo = MessagesRepository.get();
 
+  private RedditAccount localCurrentAccount;
   private MutableLiveData<String> currentUserName = new MutableLiveData<>();
-  private LiveData<RedditAccount> currentAccount = Transformations
-      .switchMap(currentUserName, userRepo::getAccount);
+  private MediatorLiveData<RedditAccount> mediatorAccountLiveData = new MediatorLiveData<>();
+
+  public MessagesActivityDataModel(String initialUsername) {
+      currentUserName.setValue(initialUsername);
+
+    LiveData<RedditAccount> currentAccountDbObserver = Transformations
+        .switchMap(currentUserName, userRepo::getAccount);
+
+    mediatorAccountLiveData.addSource(currentAccountDbObserver, newAccount -> {
+        if (MiscFuncs.shouldCurrentAccountBeReplaced(localCurrentAccount, newAccount)) {
+          mediatorAccountLiveData.setValue(newAccount);
+          localCurrentAccount = newAccount;
+        }
+      });
+  }
 
   public LiveData<RedditAccount> getCurrentAccount() {
-    return currentAccount;
+    return mediatorAccountLiveData;
   }
 
   public LiveData<String> getCurrentUserName() {
@@ -44,7 +60,7 @@ public class MessagesActivityDataModel {
 
   //Returns a list of conversations with the oldest messages at top.
   public LiveData<PagedList<Message>> getMessagesForConversationView() {
-    return messageRepo.getNewestMessagesPerConversation(currentAccount.getValue());
+    return Transformations.switchMap(mediatorAccountLiveData, messageRepo::getNewestMessagesPerConversation);
   }
 
   public LiveData<PagedList<Message>> getAllConversationMessagesPaged(RedditAccount user, String parentName) {
@@ -59,7 +75,14 @@ public class MessagesActivityDataModel {
     return messageRepo;
   }
 
-  public LiveData<List<Message>> getUnreadMessagesAsList(RedditAccount account) {
-    return messageRepo.getUnreadMessagesAsListForAccount(account);
+  public LiveData<List<Message>> getUnreadMessagesAsList() {
+    return Transformations.switchMap(mediatorAccountLiveData, messageRepo::getUnreadMessagesAsListForAccount);
+  }
+
+  public LiveData<Boolean> markAllUnreadMessagesAsRead() {
+    if (mediatorAccountLiveData.getValue() == null) {
+      return new MutableLiveData<>();
+    }
+    return messageRepo.markAllMessagesAsRead(mediatorAccountLiveData.getValue());
   }
 }
