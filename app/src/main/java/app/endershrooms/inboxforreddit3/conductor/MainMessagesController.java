@@ -46,6 +46,7 @@ public class MainMessagesController extends LifecycleActivityController {
     //TODO: Marking messages as read on open or reply
     //TODO: Message notifications
     //TODO: Viewing images and webpages in here.
+    //TODO: Hide/Delete messages locally.
 
     View view = inflater.inflate(R.layout.activity_messages_fragment, container,false);
     viewModel = ViewModelProviders.of(getLifecycleActivity()).get(MessagesActivityViewModel.class);
