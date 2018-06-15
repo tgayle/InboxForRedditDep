@@ -28,7 +28,11 @@ public class MessagesActivityDataModel {
 
     mediatorAccountLiveData.addSource(currentAccountDbObserver, newAccount -> {
         if (MiscFuncs.shouldCurrentAccountBeReplaced(localCurrentAccount, newAccount)) {
-          mediatorAccountLiveData.setValue(newAccount);
+          if (newAccount == null) {
+            mediatorAccountLiveData.setValue(MiscFuncs.ANON_ACCOUNT);
+          } else {
+            mediatorAccountLiveData.setValue(newAccount);
+          }
           localCurrentAccount = newAccount;
         }
       });

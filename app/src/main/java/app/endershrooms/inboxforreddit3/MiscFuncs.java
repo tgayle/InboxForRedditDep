@@ -12,6 +12,11 @@ import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 
 public class MiscFuncs {
 
+  private MiscFuncs() {
+  }
+
+  public static RedditAccount ANON_ACCOUNT = new RedditAccount("anon", null, null);
+
   public static String getRelativeDateTime(long millis) {
     return DateUtils.getRelativeTimeSpanString(millis * 1000, System.currentTimeMillis(),
         0L, DateUtils.FORMAT_ABBREV_ALL).toString();
@@ -67,7 +72,7 @@ public class MiscFuncs {
   }
 
   public static boolean shouldCurrentAccountBeReplaced(RedditAccount currentAccount, RedditAccount newAccount) {
-    return currentAccount == null || !currentAccount.getUsername().equals(newAccount.getUsername());
+    return currentAccount == null ||  newAccount == null || !currentAccount.getUsername().equals(newAccount.getUsername());
   }
 
   public static void debugLog(String tag, String log) {

@@ -14,24 +14,7 @@ public class MessagesJSONResponse {
   public String kind;
   public MessageResponseData data;
 
-  @Deprecated
   public List<Message> convertJsonToMessages(RedditAccount currentUser) {
-    List<Message> messageList= new ArrayList<>();
-    for (IndividualMessageResponseModel child : data.children) {
-      Data message = child.data;
-//      Log.d("JSONMessages", String.format("Name: %s%n"
-//          + "Parent: %s%n"
-//          + "Timestamp: %s%n"
-//          + "Author: %s%n"
-//          + "Dest: %s%n", message.name, message.first_message_name, message.created_utc, message.author, message.dest));
-
-      Message properMsg = new Message(currentUser, message.name, message.first_message_name, message.author, message.dest, message.subject, message.body_html, message.created_utc, message.isNew);
-      messageList.add(properMsg);
-    }
-    return messageList;
-  }
-
-  public List<Message> otherConvertJsonToMessages(RedditAccount currentUser) {
     List<Message> messages = new ArrayList<>();
     for (IndividualMessageResponseModel child : data.children) {
       String name = child.data.name;
@@ -53,7 +36,9 @@ public class MessagesJSONResponse {
 
       messageContent = messageContent.substring(0, messageContent.lastIndexOf("\n"));
 
-      Message thisMsg = new Message(currentUser, name, parent_name, messageData.author, messageData.dest, messageData.subject, messageContent, messageData.created_utc, messageData.isNew);
+      Message thisMsg = new Message(currentUser, name, parent_name,
+          messageData.author, messageData.dest, messageData.subject,
+          messageContent, messageData.created_utc, messageData.isNew,null);
       messages.add(thisMsg);
     }
     return messages;

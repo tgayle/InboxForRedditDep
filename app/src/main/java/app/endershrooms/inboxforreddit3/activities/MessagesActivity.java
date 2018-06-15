@@ -56,16 +56,13 @@ public class MessagesActivity extends BaseActivity implements OnAccountListInter
     drawerAccountSwitcher.setAdapter(accountsListAdapter);
     model.getDataModel().getAccountsAsPagedList().observe(this, list -> accountsListAdapter.submitList(list));
 
-    model.getDataModel().getCurrentUserName().observe(this, name -> {
-          if (model.shouldReturnToLoginScreen(name)) {
-            finish();
-            Intent goBackToLogin = new Intent(this, EntryLoginActivity.class);
-            startActivity(goBackToLogin);
-          }
-    });
-
     model.getDataModel().getCurrentAccount().observe(this, redditAccount ->{
       if (redditAccount != null) {
+        if (model.shouldReturnToLoginScreen(redditAccount)) {
+          finish();
+          Intent goBackToLogin = new Intent(this, EntryLoginActivity.class);
+          startActivity(goBackToLogin);
+        }
         drawerUsernameTv.setText(redditAccount.getUsername());
       }
     });

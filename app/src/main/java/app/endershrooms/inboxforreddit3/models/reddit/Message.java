@@ -1,8 +1,11 @@
 package app.endershrooms.inboxforreddit3.models.reddit;
 
+import android.arch.persistence.room.Embedded;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import app.endershrooms.inboxforreddit3.database.LocalMessageState;
 
 /**
  * Created by Travis on 1/22/2018.
@@ -22,9 +25,13 @@ public class Message {
   private long timestamp;
   private boolean isNew;
 
+  @Embedded
+  private LocalMessageState messageState;
+
+
   public Message(String messageOwner, @NonNull String messageName, String parentMessageName,
       String author, String destination, String subject, String messageBody,
-      long timestamp, boolean isNew) {
+      long timestamp, boolean isNew, @Nullable LocalMessageState messageState) {
     this.messageOwner = messageOwner;
     this.messageName = messageName;
     this.parentMessageName = parentMessageName;
@@ -34,20 +41,17 @@ public class Message {
     this.messageBody = messageBody;
     this.timestamp = timestamp;
     this.isNew = isNew;
+    this.messageState = messageState;
+    if (messageState == null) {
+      this.messageState = new LocalMessageState(true, false, false, false);
+    }
   }
 
   public Message(RedditAccount messageOwner, @NonNull String messageName, String parentMessageName,
       String author, String destination, String subject, String messageBody,
-      long timestamp, boolean isNew) {
-    this.messageOwner = messageOwner.getUsername();
-    this.messageName = messageName;
-    this.parentMessageName = parentMessageName;
-    this.author = author;
-    this.destination = destination;
-    this.subject = subject;
-    this.messageBody = messageBody;
-    this.timestamp = timestamp;
-    this.isNew = isNew;
+      long timestamp, boolean isNew, LocalMessageState messageState) {
+    this(messageOwner.getUsername(), messageName, parentMessageName, author,
+        destination, subject, messageBody, timestamp, isNew, messageState);
   }
 
   @NonNull
@@ -123,6 +127,14 @@ public class Message {
     this.isNew = is_new;
   }
 
+  public LocalMessageState getMessageState() {
+    return messageState;
+  }
+
+  public void setMessageState(LocalMessageState messageState) {
+    this.messageState = messageState;
+  }
+
   public String getCorrespondent() {
     if (messageOwner.equals(author)) {
       return destination;
@@ -141,6 +153,7 @@ public class Message {
 
   @Override
   public boolean equals(Object obj) {
+    if (this == obj) return true;
     if (obj instanceof Message) {
       Message otherMsg = (Message) obj;
       return this.getMessageName().equals(otherMsg.getMessageName())          &&

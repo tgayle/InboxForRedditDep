@@ -40,7 +40,9 @@ public class Singleton {
 
   public AppDatabase prepareDatabase(Context context) {
     if (db == null) {
-      db = Room.databaseBuilder(context, AppDatabase.class, "InboxForRedditDB.db").build();
+      db = Room.databaseBuilder(context, AppDatabase.class, "InboxForRedditDB.db")
+          .addMigrations(AppDatabase.MIGRATION_3_4)
+          .build();
     }
     return db;
   }

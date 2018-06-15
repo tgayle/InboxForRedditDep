@@ -11,6 +11,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import app.endershrooms.inboxforreddit3.Constants;
+import app.endershrooms.inboxforreddit3.MiscFuncs;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import app.endershrooms.inboxforreddit3.models.reddit.ResponseWithError;
 import app.endershrooms.inboxforreddit3.viewmodels.model.MessagesActivityDataModel;
@@ -150,7 +151,7 @@ public class MessagesActivityViewModel extends AndroidViewModel {
     DONE
   }
 
-  public boolean shouldReturnToLoginScreen(String username) {
-    return username != null && username.equals(Constants.USER_REMOVED);
+  public boolean shouldReturnToLoginScreen(RedditAccount account) {
+    return account == MiscFuncs.ANON_ACCOUNT;
   }
 }

@@ -68,7 +68,7 @@ public class APIManager {
       messageLoader
           .observeOn(Schedulers.io())
           .subscribe(messagesJSONResponse -> {
-            Singleton.get().getDb().messages().insertMessages(messagesJSONResponse.otherConvertJsonToMessages(user));
+            Singleton.get().getDb().messages().insertMessages(messagesJSONResponse.convertJsonToMessages(user));
             onCompleteInterface.onComplete(beforeOrAfter, messagesJSONResponse.data.after, messagesJSONResponse.data.children.size());
           }, errorListener::onError);
     }, errorListener::onError);
