@@ -13,7 +13,6 @@ import android.util.Log;
 import app.endershrooms.inboxforreddit3.Constants;
 import app.endershrooms.inboxforreddit3.MiscFuncs;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
-import app.endershrooms.inboxforreddit3.models.reddit.ResponseWithError;
 import app.endershrooms.inboxforreddit3.viewmodels.model.MessagesActivityDataModel;
 import java.util.List;
 
@@ -23,8 +22,6 @@ import java.util.List;
 
 public class MessagesActivityViewModel extends AndroidViewModel {
   private MessagesActivityDataModel dataModel;
-  private MutableLiveData<String> currentConversationName = new MutableLiveData<>();
-  private MutableLiveData<ResponseWithError<LoadingStatusEnum, String>> loadingStatus = new MutableLiveData<>();
   private SharedPreferences sharedPreferences;
   private MutableLiveData<String> currentUserName;
   private LiveData<RedditAccount> currentAccount;
@@ -51,55 +48,10 @@ public class MessagesActivityViewModel extends AndroidViewModel {
 
   public void initAccountSwitch(RedditAccount user) {
     setCurrentUsername(user.getUsername());
-    setLoadingStatus(LoadingStatusEnum.DONE);
-  }
-
-  public LiveData<String> getCurrentConversationName() {
-    return currentConversationName;
-  }
-
-  public void setCurrentConversationName(String parentName) {
-    currentConversationName.setValue(parentName);
   }
 
   public MessagesActivityDataModel getDataModel() {
     return dataModel;
-  }
-
-  public LiveData<ResponseWithError<String, Throwable>> loadNewestMessages() {
-    Log.d("MessagesViewModel", "Load newest " + (currentAccount.getValue() == null ? currentAccount : currentAccount.getValue().getUsername()));
-    return dataModel.getMessageRepo().loadNewestMessages(currentAccount.getValue());
-  }
-
-  public LiveData<ResponseWithError<String, Throwable>> loadAllMessages() {
-    setLoadingStatus(LoadingStatusEnum.LOADING, null);
-    LiveData<ResponseWithError<String, Throwable>> result = dataModel.getMessageRepo().loadAllMessages(currentAccount.getValue());
-    result.observeForever(new Observer<ResponseWithError<String, Throwable>>() {
-      @Override
-      public void onChanged(@Nullable ResponseWithError<String, Throwable> stringThrowableResponseWithError) {
-        if (stringThrowableResponseWithError.getData() == null) {
-          setLoadingStatus(LoadingStatusEnum.DONE);
-          result.removeObserver(this);
-        }
-      }
-    });
-    return result;
-  }
-
-  public LiveData<ResponseWithError<LoadingStatusEnum, String>> getLoadingStatus() {
-    return loadingStatus;
-  }
-
-  public void setLoadingStatus(LoadingStatusEnum status) {
-    loadingStatus.postValue(new ResponseWithError<>(status, null));
-  }
-
-  public void setLoadingStatus(LoadingStatusEnum status, Throwable throwable) {
-    String error = throwable == null ? null : throwable.getLocalizedMessage();
-    if (throwable != null) {
-      throwable.printStackTrace();
-    }
-    loadingStatus.postValue(new ResponseWithError<>(status, error));
   }
 
   public void removeAccount(RedditAccount removedAccount) {
@@ -139,10 +91,6 @@ public class MessagesActivityViewModel extends AndroidViewModel {
       currentAccount.getValue().setAccountIsNew(isNew);
       dataModel.getUserRepo().updateAccount(currentAccount.getValue());
     }
-  }
-
-  public LiveData<Boolean> markAllMessagesAsRead() {
-    return dataModel.markAllUnreadMessagesAsRead();
   }
 
   public enum LoadingStatusEnum {

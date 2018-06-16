@@ -76,6 +76,7 @@ public abstract class MessageViewHolder extends ViewHolder {
 
     this.messageTv.setText(trim(Html.fromHtml(noTrailingwhiteLines(trimmedMsg)))); //Not trimming a second time adds weird whitespace?
     this.parentCardView.setOnClickListener(onMessageClick(message));
+    this.parentCardView.setOnLongClickListener(onMessageLongClick(message));
   }
 
   public void clear() {
@@ -105,4 +106,8 @@ public abstract class MessageViewHolder extends ViewHolder {
           return oldItem.equals(newItem);
         }
       };
+
+  public View.OnLongClickListener onMessageLongClick(Message message) {
+    return null;
+  }
 }

@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.adapters.ConversationPreviewAdapter.PreviewViewHolder;
@@ -62,5 +63,12 @@ public class ConversationPreviewAdapter extends
       };
     }
 
+    @Override
+    public OnLongClickListener onMessageLongClick(Message message) {
+      return view -> {
+        onMessageSelectedInterface.onMessageLongSelect(message);
+        return true;
+      };
+    }
   }
 }

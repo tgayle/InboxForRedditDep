@@ -27,7 +27,6 @@ public class UnreadMessageButtonView extends FrameLayout {
     inflate(getContext(), R.layout.unread_messages_toolbar_view, this);
     parentCardView = findViewById(R.id.menu_unread_message_parent_cardview);
     unreadMessageNumTextView = findViewById(R.id.menu_unread_message_btn);
-    setClickable(true);
     hide(); //Hidden by default
   }
 
@@ -41,15 +40,15 @@ public class UnreadMessageButtonView extends FrameLayout {
   }
 
   public void hide() {
-    setClickable(false);
-    setEnabled(false);
-    animate().setDuration(75).alpha(0f).withEndAction(() -> setVisibility(INVISIBLE)).start();
+    parentCardView.setClickable(false);
+    parentCardView.setEnabled(false);
+    animate().setDuration(75).alpha(0f).withEndAction(() -> parentCardView.setVisibility(INVISIBLE)).start();
   }
 
   public void show() {
-    setClickable(true);
-    setEnabled(true);
-    animate().setDuration(100).alpha(1f).withStartAction(() -> setVisibility(VISIBLE)).start();
+    parentCardView.setClickable(true);
+    parentCardView.setEnabled(true);
+    animate().setDuration(100).alpha(1f).withStartAction(() -> parentCardView.setVisibility(VISIBLE)).start();
   }
 
   @Override

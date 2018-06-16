@@ -28,10 +28,10 @@ import com.bluelinelabs.conductor.RouterTransaction;
 
 public class MessagesActivity extends BaseActivity implements OnAccountListInteraction {
 
-  AccountsListAdapter accountsListAdapter;
-  MessagesActivityViewModel model;
+  private AccountsListAdapter accountsListAdapter;
+  private MessagesActivityViewModel model;
 
-  DrawerLayout drawer;
+  private DrawerLayout drawer;
   private Router router;
 
   @Override

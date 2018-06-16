@@ -11,9 +11,12 @@ import android.support.v7.app.AlertDialog.Builder;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.ActionMode;
+import android.view.ActionMode.Callback;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -25,7 +28,9 @@ import app.endershrooms.inboxforreddit3.interfaces.OnMessageSelectedInterface;
 import app.endershrooms.inboxforreddit3.models.reddit.Message;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel.LoadingStatusEnum;
+import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModelFactory;
 import app.endershrooms.inboxforreddit3.viewmodels.model.MessagesActivityDataModel;
+import app.endershrooms.inboxforreddit3.viewmodels.model.MessagesControllerViewModel;
 import app.endershrooms.inboxforreddit3.views.CustomLinearLayoutManager;
 import app.endershrooms.inboxforreddit3.views.UnreadMessageButtonView;
 import com.bluelinelabs.conductor.RouterTransaction;
@@ -36,8 +41,9 @@ public class MainMessagesController extends LifecycleActivityController {
   private SwipeRefreshLayout swipeRefreshLayout;
   private RecyclerView messageRv;
 
-  private MessagesActivityViewModel viewModel;
+  private MessagesActivityViewModel activityViewModel;
   private MessagesActivityDataModel dataModel;
+  private MessagesControllerViewModel controllerViewModel;
 
   private Toolbar toolbar;
 
@@ -56,9 +62,10 @@ public class MainMessagesController extends LifecycleActivityController {
     //TODO: Hide/Delete messages locally.
 
     toolbar = getLifecycleActivity().findViewById(R.id.main_messages_frag_toolbar);
-    viewModel = ViewModelProviders.of(getLifecycleActivity()).get(MessagesActivityViewModel.class);
+    activityViewModel = ViewModelProviders.of(getLifecycleActivity()).get(MessagesActivityViewModel.class);
     View view = inflater.inflate(R.layout.activity_messages_fragment, container,false);
-    dataModel = viewModel.getDataModel();
+    dataModel = activityViewModel.getDataModel();
+    controllerViewModel = new MessagesActivityViewModelFactory(dataModel).create(MessagesControllerViewModel.class);
 
     //Setup views
     prepareViews(view);
@@ -76,7 +83,35 @@ public class MainMessagesController extends LifecycleActivityController {
 
       @Override
       public void onMessageLongSelect(Message message) {
+        getLifecycleActivity().startActionMode(new Callback() {
+          @Override
+          public boolean onCreateActionMode(ActionMode actionMode, Menu menu) {
+            actionMode.getMenuInflater().inflate(R.menu.menu_context_conversation_action, menu);
+            swipeRefreshLayout.setEnabled(false);
+            return true;
+          }
 
+          @Override
+          public boolean onPrepareActionMode(ActionMode actionMode, Menu menu) {
+            return false;
+          }
+
+          @Override
+          public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
+            switch (menuItem.getItemId()) {
+              case R.id.delete_conversation:
+                //TODO: Finish this. MultiSelectModeForRecyclerView
+                return true;
+              default:
+                  return false;
+            }
+          }
+
+          @Override
+          public void onDestroyActionMode(ActionMode actionMode) {
+            swipeRefreshLayout.setEnabled(false);
+          }
+        });
       }
     });
     messageRv.setAdapter(messageConversationAdapter);
@@ -92,8 +127,8 @@ public class MainMessagesController extends LifecycleActivityController {
       if (currentAccount != null) {
         scrollRecyclerViewToTop(messageRv);
         if (currentAccount.getAccountIsNew()) { //Load all messages if new
-          viewModel.loadAllMessages();
-          viewModel.setAccountIsNew(false);
+          controllerViewModel.loadAllMessages();
+          activityViewModel.setAccountIsNew(false);
         } else {
           Log.d("MainMessages", "Starting refresh");
           startRefresh();
@@ -128,13 +163,13 @@ public class MainMessagesController extends LifecycleActivityController {
   }
 
   private void startRefresh() {
-    viewModel.setLoadingStatus(LoadingStatusEnum.LOADING);
+    controllerViewModel.setLoadingStatus(LoadingStatusEnum.LOADING);
 
-    viewModel.loadNewestMessages().observe(this, stringThrowableResponseWithError -> {
+    controllerViewModel.loadNewestMessages().observe(this, stringThrowableResponseWithError -> {
       if (stringThrowableResponseWithError != null) {
         if ((stringThrowableResponseWithError.getData() == null || stringThrowableResponseWithError.getData().equals(""))) {
           Log.d("LoadingStatus", "LoadNewest is " + stringThrowableResponseWithError.getData());
-          viewModel.setLoadingStatus(LoadingStatusEnum.DONE);
+          controllerViewModel.setLoadingStatus(LoadingStatusEnum.DONE);
         }
       }
     });
@@ -144,7 +179,7 @@ public class MainMessagesController extends LifecycleActivityController {
     Snackbar errorSnack = Snackbar.make( rootView,
         "There was an issue...", Snackbar.LENGTH_INDEFINITE);
 
-    viewModel.getLoadingStatus().observe(this, newStatus -> {
+    controllerViewModel.getLoadingStatus().observe(this, newStatus -> {
       if (newStatus != null) {
         Log.d("LoadingStatus", "Current status is " + newStatus.getData());
         errorSnack.setAction(null, null); //reset in case it changed
@@ -193,7 +228,8 @@ public class MainMessagesController extends LifecycleActivityController {
                 Snackbar clearing = Snackbar.make(getView(), "Clearing messages...", Snackbar.LENGTH_LONG);
                 clearing.show();
                 Snackbar finished = Snackbar.make(getView(), "All messages marked as read!", Snackbar.LENGTH_SHORT);
-                viewModel.markAllMessagesAsRead().observe(MainMessagesController.this, isFinished -> {
+                controllerViewModel
+                    .markAllMessagesAsRead().observe(MainMessagesController.this, isFinished -> {
                   if (isFinished != null && isFinished) {
                     clearing.dismiss();
                     finished.show();
@@ -216,12 +252,22 @@ public class MainMessagesController extends LifecycleActivityController {
     unreadMessageButtonView.setOnClickListener(onUnreadToolbarBtnClicked);
 
     dataModel.getUnreadMessagesAsList().observe(this, messages -> {
-      Log.d("MessagesController", "Unread btn received alert " + messages);
       if (messages != null) {
         unreadMessageButtonView.setUnreadMessages(messages.size());
       } else {
         unreadMessageButtonView.setUnreadMessages(null);
       }
     });
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    switch (item.getItemId()) {
+      case R.id.main_messages_controller_menu_refresh:
+        startRefresh();
+        return true;
+      default:
+        return false;
+    }
   }
 }
