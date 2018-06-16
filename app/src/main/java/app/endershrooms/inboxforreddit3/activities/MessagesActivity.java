@@ -38,6 +38,7 @@ public class MessagesActivity extends BaseActivity implements OnAccountListInter
   protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_messages_with_drawer);
+    setSupportActionBar(findViewById(R.id.main_messages_frag_toolbar));
     model = ViewModelProviders.of(this).get(MessagesActivityViewModel.class);
 
     router = Conductor.attachRouter(this, findViewById(R.id.messages_activity_fragholder), savedInstanceState);

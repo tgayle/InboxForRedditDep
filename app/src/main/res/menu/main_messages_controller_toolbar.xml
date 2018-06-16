@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto">
+  <item
+    android:actionLayout="@layout/unread_messages_toolbar_view"
+    android:id="@+id/unread_messages_btn_info"
+    app:actionViewClass="app.endershrooms.inboxforreddit3.views.UnreadMessageButtonView"
+    android:title="Unread Messages"
+    app:showAsAction="always"/>
+
+  <item
+    android:title="Refresh"
+    app:showAsAction="never"
+    android:id="@+id/main_messages_controller_menu_refresh">
+
+  </item>
+
+</menu>

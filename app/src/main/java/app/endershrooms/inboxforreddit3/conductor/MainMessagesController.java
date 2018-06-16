@@ -12,12 +12,17 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Toast;
 import app.endershrooms.inboxforreddit3.MiscFuncs;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.adapters.ConversationPreviewAdapter;
+import app.endershrooms.inboxforreddit3.interfaces.OnMessageSelectedInterface;
+import app.endershrooms.inboxforreddit3.models.reddit.Message;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel.LoadingStatusEnum;
 import app.endershrooms.inboxforreddit3.viewmodels.model.MessagesActivityDataModel;
@@ -30,13 +35,15 @@ public class MainMessagesController extends LifecycleActivityController {
   private ConversationPreviewAdapter messageConversationAdapter;
   private SwipeRefreshLayout swipeRefreshLayout;
   private RecyclerView messageRv;
-  private UnreadMessageButtonView unreadMessageButtonView;
-  private Toolbar toolbar;
 
   private MessagesActivityViewModel viewModel;
+  private MessagesActivityDataModel dataModel;
+
+  private Toolbar toolbar;
 
   public MainMessagesController() {
     setRetainViewMode(RetainViewMode.RETAIN_DETACH);
+    setHasOptionsMenu(true);
   }
 
   @NonNull
@@ -48,30 +55,31 @@ public class MainMessagesController extends LifecycleActivityController {
     //TODO: Viewing images and webpages in here.
     //TODO: Hide/Delete messages locally.
 
-    View view = inflater.inflate(R.layout.activity_messages_fragment, container,false);
+    toolbar = getLifecycleActivity().findViewById(R.id.main_messages_frag_toolbar);
     viewModel = ViewModelProviders.of(getLifecycleActivity()).get(MessagesActivityViewModel.class);
-    MessagesActivityDataModel dataModel = viewModel.getDataModel();
+    View view = inflater.inflate(R.layout.activity_messages_fragment, container,false);
+    dataModel = viewModel.getDataModel();
 
     //Setup views
     prepareViews(view);
     prepareLogic(view);
 
-    messageConversationAdapter = new ConversationPreviewAdapter(message -> {
-      getRouter()
-          .pushController(RouterTransaction.with(new ConversationViewController(message.getParentMessageName()))
-          .pushChangeHandler(new HorizontalChangeHandler())
-          .popChangeHandler(new HorizontalChangeHandler()));
-    });
-    messageRv.setAdapter(messageConversationAdapter);
+    messageConversationAdapter = new ConversationPreviewAdapter(new OnMessageSelectedInterface() {
+      @Override
+      public void onMessageSelected(Message message) {
+        MainMessagesController.this.getRouter()
+            .pushController(RouterTransaction
+                .with(new ConversationViewController(message.getParentMessageName()))
+                .pushChangeHandler(new HorizontalChangeHandler())
+                .popChangeHandler(new HorizontalChangeHandler()));
+      }
 
+      @Override
+      public void onMessageLongSelect(Message message) {
 
-    dataModel.getUnreadMessagesAsList().observe(this, messages -> {
-      if (messages != null) {
-        unreadMessageButtonView.setUnreadMessages(messages.size());
-      } else {
-        unreadMessageButtonView.setUnreadMessages(null);
       }
     });
+    messageRv.setAdapter(messageConversationAdapter);
 
     dataModel.getMessagesForConversationView().observe(this, conversations -> {
       messageConversationAdapter.submitList(conversations);
@@ -95,6 +103,13 @@ public class MainMessagesController extends LifecycleActivityController {
     return view;
   }
 
+  @Override
+  protected void onAttach(@NonNull View view) {
+    super.onAttach(view);
+    getLifecycleActivity().setTitle("Messages");
+    toolbar.setOnClickListener(toolbarView -> MiscFuncs.smartScrollToTop(messageRv, 15));
+  }
+
   private void prepareViews(View rootView) {
     swipeRefreshLayout = rootView.findViewById(R.id.activities_messages_swiperefresh);
     messageRv = rootView.findViewById(R.id.messages_frag_message_rv);
@@ -103,40 +118,12 @@ public class MainMessagesController extends LifecycleActivityController {
     linearLayoutManager.setReverseLayout(true);
     linearLayoutManager.setStackFromEnd(true);
 
-    toolbar = rootView.findViewById(R.id.main_messages_frag_toolbar);
-    toolbar.setTitle("Messages");
-
-    unreadMessageButtonView = toolbar.findViewById(R.id.messages_fragment_toolbar_unreadmsgs_view);
-    unreadMessageButtonView.hide();
   }
 
   private void prepareLogic(View rootView) {
     swipeRefreshLayout.setOnRefreshListener(this::startRefresh);
     prepareLoadingStatus(rootView);
 
-    toolbar.setOnClickListener(view -> MiscFuncs.smartScrollToTop(messageRv, 15));
-
-    unreadMessageButtonView.setOnClickListener(view -> {
-      new Builder(rootView.getContext())
-          .setTitle("Mark all messages as read?")
-          .setPositiveButton("Confirm",
-              (dialogInterface, i) -> {
-                Snackbar clearing = Snackbar.make(rootView, "Clearing messages...", Snackbar.LENGTH_LONG);
-                clearing.show();
-                Snackbar finished = Snackbar.make(rootView, "All messages marked as read!", Snackbar.LENGTH_SHORT);
-                viewModel.markAllMessagesAsRead().observe(this, isFinished -> {
-                  if (isFinished != null && isFinished) {
-                    clearing.dismiss();
-                    finished.show();
-                  }
-                });
-              })
-          .setNegativeButton("Cancel",
-              (dialogInterface, i) -> {
-                Toast.makeText(rootView.getContext(), "Cancelled", Toast.LENGTH_SHORT).show();
-              })
-          .show();
-    });
 
   }
 
@@ -196,5 +183,45 @@ public class MainMessagesController extends LifecycleActivityController {
         .create();
   }
 
+  private View.OnClickListener onUnreadToolbarBtnClicked = new OnClickListener() {
+    @Override
+    public void onClick(View view) {
+      new Builder(getView().getContext())
+          .setTitle("Mark all messages as read?")
+          .setPositiveButton("Confirm",
+              (dialogInterface, i) -> {
+                Snackbar clearing = Snackbar.make(getView(), "Clearing messages...", Snackbar.LENGTH_LONG);
+                clearing.show();
+                Snackbar finished = Snackbar.make(getView(), "All messages marked as read!", Snackbar.LENGTH_SHORT);
+                viewModel.markAllMessagesAsRead().observe(MainMessagesController.this, isFinished -> {
+                  if (isFinished != null && isFinished) {
+                    clearing.dismiss();
+                    finished.show();
+                  }
+                });
+              })
+          .setNegativeButton("Cancel",
+              (dialogInterface, i) -> {
+                Toast.makeText(view.getContext(), "Cancelled", Toast.LENGTH_SHORT).show();
+              })
+          .show();
+    }
+  };
 
+  @Override
+  public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+    super.onCreateOptionsMenu(menu, inflater);
+    inflater.inflate(R.menu.main_messages_controller_toolbar, menu);
+    UnreadMessageButtonView unreadMessageButtonView = (UnreadMessageButtonView) menu.findItem(R.id.unread_messages_btn_info).getActionView();
+    unreadMessageButtonView.setOnClickListener(onUnreadToolbarBtnClicked);
+
+    dataModel.getUnreadMessagesAsList().observe(this, messages -> {
+      Log.d("MessagesController", "Unread btn received alert " + messages);
+      if (messages != null) {
+        unreadMessageButtonView.setUnreadMessages(messages.size());
+      } else {
+        unreadMessageButtonView.setUnreadMessages(null);
+      }
+    });
+  }
 }
