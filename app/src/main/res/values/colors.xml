@@ -5,4 +5,5 @@
   <color name="colorAccent">#FF4081</color>
   <color name="message_black">#000000</color>
   <color name="unread_message">#FF7500</color>
+  <color name="item_selected">#3F303f9f</color>
 </resources>

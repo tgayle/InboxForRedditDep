@@ -9,6 +9,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AlertDialog.Builder;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.ActionMode;
@@ -24,6 +25,7 @@ import android.widget.Toast;
 import app.endershrooms.inboxforreddit3.MiscFuncs;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.adapters.ConversationPreviewAdapter;
+import app.endershrooms.inboxforreddit3.adapters.ConversationPreviewAdapter.PreviewViewHolder;
 import app.endershrooms.inboxforreddit3.interfaces.OnMessageSelectedInterface;
 import app.endershrooms.inboxforreddit3.models.reddit.Message;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel;
@@ -82,12 +84,14 @@ public class MainMessagesController extends LifecycleActivityController {
       }
 
       @Override
-      public void onMessageLongSelect(Message message) {
+      public void onMessageLongSelect(ViewHolder previewViewHolder, Message message) {
         getLifecycleActivity().startActionMode(new Callback() {
           @Override
           public boolean onCreateActionMode(ActionMode actionMode, Menu menu) {
             actionMode.getMenuInflater().inflate(R.menu.menu_context_conversation_action, menu);
             swipeRefreshLayout.setEnabled(false);
+            messageConversationAdapter.allowItemSelection(true);
+            messageConversationAdapter.markItemSelected((PreviewViewHolder) previewViewHolder, message);
             return true;
           }
 
@@ -109,7 +113,9 @@ public class MainMessagesController extends LifecycleActivityController {
 
           @Override
           public void onDestroyActionMode(ActionMode actionMode) {
-            swipeRefreshLayout.setEnabled(false);
+            swipeRefreshLayout.setEnabled(true);
+            messageConversationAdapter.allowItemSelection(false);
+            messageConversationAdapter.clearSelectedItems();
           }
         });
       }

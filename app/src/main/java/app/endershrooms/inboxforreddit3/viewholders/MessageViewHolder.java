@@ -25,6 +25,8 @@ public abstract class MessageViewHolder extends ViewHolder {
   public ImageView sentReceivedIv;
   public TextView messageTv;
 
+  public boolean allowItemSelection;
+
   public MessageViewHolder(View itemView) {
     super(itemView);
     parentCardView = itemView.findViewById(R.id.conversation_layout_cardview);
@@ -109,5 +111,13 @@ public abstract class MessageViewHolder extends ViewHolder {
 
   public View.OnLongClickListener onMessageLongClick(Message message) {
     return null;
+  }
+
+  public void setMessageSelected(boolean selected) {
+    if (selected) {
+      this.parentCardView.getBackground().setTint(parentCardView.getContext().getResources().getColor(R.color.item_selected));
+    } else {
+      this.parentCardView.getBackground().setTint(Color.WHITE);
+    }
   }
 }
