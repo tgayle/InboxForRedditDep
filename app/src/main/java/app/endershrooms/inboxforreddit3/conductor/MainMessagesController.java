@@ -37,6 +37,7 @@ import app.endershrooms.inboxforreddit3.views.CustomLinearLayoutManager;
 import app.endershrooms.inboxforreddit3.views.UnreadMessageButtonView;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
+import java.util.List;
 
 public class MainMessagesController extends LifecycleActivityController {
   private ConversationPreviewAdapter messageConversationAdapter;
@@ -104,7 +105,23 @@ public class MainMessagesController extends LifecycleActivityController {
           public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
             switch (menuItem.getItemId()) {
               case R.id.delete_conversation:
-                //TODO: Finish this. MultiSelectModeForRecyclerView
+                //TODO: Finish this.
+                List<Message> selectedMessages = messageConversationAdapter.getSelectedItems();
+                if (selectedMessages.size() > 0) {
+                  new AlertDialog.Builder(getView().getContext())
+                      .setTitle("Delete these " + selectedMessages.size() + " messages?")
+                      .setMessage("After deleting, these messages can still be found in the deleted tab to the left.")
+                      .setPositiveButton("Delete", (dialogInterface, i) -> {
+                        controllerViewModel.deleteMessages(messageConversationAdapter.getSelectedItems());
+                        this.onDestroyActionMode(actionMode);
+                      })
+                      //TODO: Messages come back on refresh.
+                      .setNegativeButton("Cancel", (dialogInterface, i) -> {
+
+                      })
+                      .show();
+                }
+
                 return true;
               default:
                   return false;
@@ -122,7 +139,7 @@ public class MainMessagesController extends LifecycleActivityController {
     });
     messageRv.setAdapter(messageConversationAdapter);
 
-    dataModel.getMessagesForConversationView().observe(this, conversations -> {
+    dataModel.getMessagesInInboxForConversationView().observe(this, conversations -> {
       messageConversationAdapter.submitList(conversations);
       Log.d("GetMessageConvo", "Size: " + (conversations != null ? conversations.size() : conversations));
       //Scroll to top when we update the list.

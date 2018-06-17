@@ -18,7 +18,7 @@ import java.util.List;
 
 @Dao
 public interface MessageDao {
-  String SELECT_ALL_FOR_ACCOUNT = "SELECT * FROM messages";
+  String SELECT_ALL_FROM_ALL_ACCOUNTS = "SELECT * FROM messages";
   String SELECT_NEWEST_MESSAGE_PER_CONVERSATION_FOR_ACCOUNT = "SELECT t1.* FROM messages AS t1"
       + " JOIN (SELECT parentMessageName, MAX(timestamp) timestamp FROM messages GROUP BY parentMessageName) AS t2"
       + " ON t1.parentMessageName = t2.parentMessageName AND t1.timestamp = t2.timestamp AND t1.messageOwner LIKE :account"
@@ -29,6 +29,12 @@ public interface MessageDao {
       + " AND messageOwner LIKE :account";
 
   String SELECT_NAMES_OF_ALL_UNREAD_MESSAGES_FOR_ACCOUNT = "SELECT messageName FROM messages WHERE messageOwner LIKE :account AND isNew = 1";
+
+  String SELECT_NEWEST_MESSAGE_PER_CONVERSATIONS_ONLY_IN_INBOX_FOR_ACCOUNT = "SELECT t1.* FROM messages AS t1 "
+      + "JOIN (SELECT parentMessageName, MAX(timestamp) timestamp FROM messages GROUP BY parentMessageName) AS t2 "
+      + "ON t1.parentMessageName = t2.parentMessageName AND t1.timestamp = t2.timestamp AND t1.messageOwner LIKE :account "
+      + "WHERE inInbox = 1 AND inDeleted = 0 AND isHidden = 0 "
+      + "ORDER BY timestamp";
 
   String SELECT_FIRST_MESSAGE_FOR_ACCOUNT = "SELECT * FROM messages WHERE messageOwner LIKE :account LIMIT 1";
   String SELECT_NEWEST_MESSAGE_FOR_ACCOUNT = "SELECT * FROM messages WHERE messageOwner LIKE :account ORDER BY messageName DESC LIMIT 1";
@@ -49,7 +55,7 @@ public interface MessageDao {
   void updateMessage(Message message);
 
   @Update
-  void updateMessages(List<Message> messages);
+  int updateMessages(List<Message> messages);
 
   @Delete
   int deleteMessage(Message message);
@@ -63,7 +69,7 @@ public interface MessageDao {
   @Query("SELECT * FROM messages WHERE messageOwner LIKE :account ORDER BY timestamp DESC")
   LiveData<List<Message>> getAllUserMessagesDesc(String account); //Newest First
 
-  @Query(SELECT_ALL_FOR_ACCOUNT)
+  @Query(SELECT_ALL_FROM_ALL_ACCOUNTS)
   LiveData<List<Message>> getAllMessagesFromAllAccounts();
 
   @Query(SELECT_ALL_PARENT_NAMES_FOR_ACCOUNT)
@@ -107,5 +113,11 @@ public interface MessageDao {
 
   @Query(UPDATE_MARK_ALL_UNREAD_MESSAGES_AS_READ_FOR_ACCOUNT)
   int markAllUnreadMessagesAsReadForAccount(String account);
+
+  @Query(SELECT_NEWEST_MESSAGE_PER_CONVERSATIONS_ONLY_IN_INBOX_FOR_ACCOUNT)
+  LiveData<List<Message>> selectNewestMessageForAllConversationsInInboxForAccount(String account);
+
+  @Query(SELECT_NEWEST_MESSAGE_PER_CONVERSATIONS_ONLY_IN_INBOX_FOR_ACCOUNT)
+  DataSource.Factory<Integer, Message> selectNewestMessageForAllConversationsInInboxForAccountPagable(String account);
 
 }

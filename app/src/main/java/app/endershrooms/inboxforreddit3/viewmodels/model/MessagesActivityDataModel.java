@@ -63,8 +63,8 @@ public class MessagesActivityDataModel {
   }
 
   //Returns a list of conversations with the oldest messages at top.
-  public LiveData<PagedList<Message>> getMessagesForConversationView() {
-    return Transformations.switchMap(mediatorAccountLiveData, messageRepo::getNewestMessagesPerConversation);
+  public LiveData<PagedList<Message>> getMessagesInInboxForConversationView() {
+    return Transformations.switchMap(mediatorAccountLiveData, messageRepo::getNewestMessagesPerConversationInInbox);
   }
 
   public LiveData<PagedList<Message>> getAllConversationMessagesPaged(RedditAccount user, String parentName) {

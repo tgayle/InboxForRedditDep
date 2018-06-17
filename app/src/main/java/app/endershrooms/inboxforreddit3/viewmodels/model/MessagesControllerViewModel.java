@@ -6,9 +6,11 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModel;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import app.endershrooms.inboxforreddit3.models.reddit.Message;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import app.endershrooms.inboxforreddit3.models.reddit.ResponseWithError;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel.LoadingStatusEnum;
+import java.util.List;
 
 public class MessagesControllerViewModel extends ViewModel {
 
@@ -63,4 +65,7 @@ public class MessagesControllerViewModel extends ViewModel {
     return dataModel.getMessageRepo().loadNewestMessages(currentAccount.getValue());
   }
 
+  public void deleteMessages(List<Message> selectedItems) {
+    dataModel.getMessageRepo().hideMessages(selectedItems);
+  }
 }

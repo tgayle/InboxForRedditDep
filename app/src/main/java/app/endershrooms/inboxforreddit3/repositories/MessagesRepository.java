@@ -8,6 +8,7 @@ import android.arch.paging.LivePagedListBuilder;
 import android.arch.paging.PagedList;
 import android.util.Log;
 import app.endershrooms.inboxforreddit3.Singleton;
+import app.endershrooms.inboxforreddit3.database.LocalMessageStates;
 import app.endershrooms.inboxforreddit3.database.dao.MessageDao;
 import app.endershrooms.inboxforreddit3.models.reddit.Message;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
@@ -34,6 +35,10 @@ public class MessagesRepository {
 
   public LiveData<PagedList<Message>> getNewestMessagesPerConversation(RedditAccount user) {
     return new LivePagedListBuilder<>(messageDao.getNewestMessageForAllConversationsForUserPagable(user.getUsername()), 10).build();
+  }
+
+  public LiveData<PagedList<Message>> getNewestMessagesPerConversationInInbox(RedditAccount user) {
+    return new LivePagedListBuilder<>(messageDao.selectNewestMessageForAllConversationsInInboxForAccountPagable(user.getUsername()), 10).build();
   }
 
   @SuppressLint("CheckResult")
@@ -122,5 +127,17 @@ public class MessagesRepository {
               .subscribe();
         });
     return onMessagesFinishedMarkRead;
+  }
+
+  public void hideMessages(List<Message> selectedItems) {
+    for (Message selectedItem : selectedItems) {
+      selectedItem.getMessageState().removeAllStatesExceptOne(LocalMessageStates.DELETED);
+    }
+    Single.fromCallable(() -> messageDao.updateMessages(selectedItems))
+        .observeOn(Schedulers.io())
+        .subscribeOn(Schedulers.io())
+        .subscribe(numUpdated -> {
+          Log.d("MessagesRepo", "Messages moved to deleted " + numUpdated);
+        });
   }
 }
