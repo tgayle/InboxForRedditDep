@@ -87,12 +87,14 @@ public class MainMessagesController extends LifecycleActivityController {
       @Override
       public void onMessageLongSelect(ViewHolder previewViewHolder, Message message) {
         getLifecycleActivity().startActionMode(new Callback() {
+          ActionMode mode = null;
           @Override
-          public boolean onCreateActionMode(ActionMode actionMode, Menu menu) {
-            actionMode.getMenuInflater().inflate(R.menu.menu_context_conversation_action, menu);
+          public boolean onCreateActionMode(ActionMode localActionModel, Menu menu) {
+            localActionModel.getMenuInflater().inflate(R.menu.menu_context_conversation_action, menu);
             swipeRefreshLayout.setEnabled(false);
             messageConversationAdapter.allowItemSelection(true);
             messageConversationAdapter.markItemSelected((PreviewViewHolder) previewViewHolder, message);
+            mode = localActionModel;
             return true;
           }
 
@@ -113,15 +115,17 @@ public class MainMessagesController extends LifecycleActivityController {
                       .setMessage("After deleting, these messages can still be found in the deleted tab to the left.")
                       .setPositiveButton("Delete", (dialogInterface, i) -> {
                         controllerViewModel.deleteMessages(messageConversationAdapter.getSelectedItems());
-                        this.onDestroyActionMode(actionMode);
+                        Log.d("ActionMode", "Finish should have happened.");
                       })
                       //TODO: Messages come back on refresh.
                       .setNegativeButton("Cancel", (dialogInterface, i) -> {
-
+                        dialogInterface.dismiss();
+                      })
+                      .setOnDismissListener(dialogInterface -> {
+                        mode.finish();
                       })
                       .show();
                 }
-
                 return true;
               default:
                   return false;
@@ -130,6 +134,7 @@ public class MainMessagesController extends LifecycleActivityController {
 
           @Override
           public void onDestroyActionMode(ActionMode actionMode) {
+            mode = null;
             swipeRefreshLayout.setEnabled(true);
             messageConversationAdapter.allowItemSelection(false);
             messageConversationAdapter.clearSelectedItems();

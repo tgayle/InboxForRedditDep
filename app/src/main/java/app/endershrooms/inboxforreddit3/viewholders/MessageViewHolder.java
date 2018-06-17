@@ -89,7 +89,7 @@ public abstract class MessageViewHolder extends ViewHolder {
     dateTv.setText("");
     sentReceivedIv.setRotation(0f);
     messageTv.setText("");
-
+    this.parentCardView.getBackground().setTint(Color.WHITE);
   }
 
   public void hide() {

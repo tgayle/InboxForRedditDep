@@ -94,10 +94,11 @@
         </android.support.v7.widget.RecyclerView>
 
         <Button
-          android:layout_width="match_parent"
+          android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:text="add"
-          android:id="@+id/navbtn"/>
+          android:text="Restore Messages"
+          android:layout_gravity="center"
+          android:id="@+id/drawer_set_deleted_msgs_as_inbox"/>
 
         <Button
           android:layout_width="match_parent"

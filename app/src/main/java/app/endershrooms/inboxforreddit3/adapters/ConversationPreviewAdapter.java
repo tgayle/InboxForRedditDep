@@ -47,6 +47,7 @@ public class ConversationPreviewAdapter extends
     Message message = getItem(position); //Last Message
     if (message != null) {
       vh.bind(message);
+      if (selectedItems.containsValue(message)) vh.setMessageSelected(true);
     } else {
       vh.hide();
     }

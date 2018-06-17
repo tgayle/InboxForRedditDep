@@ -120,6 +120,9 @@ public abstract class MessageDao {
   @Query("UPDATE messages SET isNew = :newIsNew WHERE messageName LIKE :messageName")
   public abstract void insertMessageOnlyUpdatingIsNew(String messageName, boolean newIsNew);
 
+  @Query("UPDATE messages SET inInbox = 1, inDeleted = 0 WHERE inDeleted = 1 AND messageOwner LIKE :messageOwner")
+  public abstract int restoreAllDeletedMessages(String messageOwner);
+
   public void insertMessages(List<Message> messages) {
     for (Message message : messages) {
       try {

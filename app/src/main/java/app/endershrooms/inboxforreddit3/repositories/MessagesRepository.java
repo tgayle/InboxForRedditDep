@@ -142,4 +142,15 @@ public class MessagesRepository {
           Log.d("MessagesRepo", "Messages moved to deleted " + numUpdated);
         });
   }
+
+  public LiveData<Integer> restoreAllDeletedMessagesForAccount(RedditAccount localCurrentAccount) {
+    MutableLiveData<Integer> numUpdated = new MutableLiveData<>();
+    if (localCurrentAccount != null) {
+      Single.fromCallable(() -> messageDao.restoreAllDeletedMessages(localCurrentAccount.getUsername()))
+      .subscribeOn(Schedulers.io())
+      .observeOn(Schedulers.io())
+      .subscribe(updated -> numUpdated.postValue(updated));
+    }
+    return numUpdated;
+  }
 }

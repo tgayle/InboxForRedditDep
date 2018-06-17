@@ -89,4 +89,8 @@ public class MessagesActivityDataModel {
     }
     return messageRepo.markAllMessagesAsRead(mediatorAccountLiveData.getValue());
   }
+
+  public LiveData<Integer> restoreAllDeletedMessagesForAccount() {
+    return messageRepo.restoreAllDeletedMessagesForAccount(localCurrentAccount);
+  }
 }
