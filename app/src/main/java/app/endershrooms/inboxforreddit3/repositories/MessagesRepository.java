@@ -10,6 +10,7 @@ import android.util.Log;
 import app.endershrooms.inboxforreddit3.Singleton;
 import app.endershrooms.inboxforreddit3.database.LocalMessageStates;
 import app.endershrooms.inboxforreddit3.database.dao.MessageDao;
+import app.endershrooms.inboxforreddit3.database.dao.PagedMessageDao;
 import app.endershrooms.inboxforreddit3.models.reddit.Message;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import app.endershrooms.inboxforreddit3.models.reddit.ResponseWithError;
@@ -24,6 +25,7 @@ import java.util.List;
 
 public class MessagesRepository {
   private final MessageDao messageDao = Singleton.get().getDb().messages();
+  private final PagedMessageDao pagedMessageDao = Singleton.get().getDb().pagedMessages();
 
   private static final MessagesRepository ourInstance = new MessagesRepository();
   public static MessagesRepository get() {
@@ -34,11 +36,11 @@ public class MessagesRepository {
   }
 
   public LiveData<PagedList<Message>> getNewestMessagesPerConversation(RedditAccount user) {
-    return new LivePagedListBuilder<>(messageDao.getNewestMessageForAllConversationsForUserPagable(user.getUsername()), 10).build();
+    return new LivePagedListBuilder<>(pagedMessageDao.getNewestMessageForAllConversationsForUserPagable(user.getUsername()), 10).build();
   }
 
   public LiveData<PagedList<Message>> getNewestMessagesPerConversationInInbox(RedditAccount user) {
-    return new LivePagedListBuilder<>(messageDao.selectNewestMessageForAllConversationsInInboxForAccountPagable(user.getUsername()), 10).build();
+    return new LivePagedListBuilder<>(pagedMessageDao.selectNewestMessageForAllConversationsInInboxForAccountPagable(user.getUsername()), 10).build();
   }
 
   @SuppressLint("CheckResult")
@@ -86,11 +88,11 @@ public class MessagesRepository {
   }
 
   public LiveData<PagedList<Message>> getUnreadMessagesPagedForAccount(RedditAccount account) {
-    return new LivePagedListBuilder<>(messageDao.getUnreadMessagesForAccountPagable(account.getUsername()), 20).build();
+    return new LivePagedListBuilder<>(pagedMessageDao.getUnreadMessagesForAccountPagable(account.getUsername()), 20).build();
   }
 
   public LiveData<PagedList<Message>> getMessagesForConversationPaged(RedditAccount user, String parentName) {
-    return new LivePagedListBuilder<>(messageDao.getAllMessagesFromConversationAsPaged(user.getUsername(), parentName), 20).build();
+    return new LivePagedListBuilder<>(pagedMessageDao.getAllMessagesFromConversationAsPaged(user.getUsername(), parentName), 20).build();
   }
 
   public LiveData<Message> getUnreadMessagesForAccount(RedditAccount acc) {
