@@ -14,7 +14,7 @@
       android:layout_height="?attr/actionBarSize"
       android:background="@color/colorPrimary"
       app:titleTextColor="#fff"
-      android:id="@+id/main_messages_frag_toolbar">
+      android:id="@+id/messages_activity_toolbar">
 
     </android.support.v7.widget.Toolbar>
   </android.support.design.widget.AppBarLayout>

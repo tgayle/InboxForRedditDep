@@ -17,6 +17,7 @@ import app.endershrooms.inboxforreddit3.models.reddit.ResponseWithError;
 import app.endershrooms.inboxforreddit3.net.APIManager;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -143,6 +144,19 @@ public class MessagesRepository {
         });
   }
 
+  //FIXME: If you get a new message it'll show back up here since you only hide the newest thing in a conversation i think
+  @SuppressLint("CheckResult")
+  public void hideMessageConversation(String parentName) {
+    Single.fromCallable(() -> messageDao.getNewestMessageForConversation(parentName))
+        .subscribeOn(Schedulers.io())
+        .observeOn(Schedulers.io())
+        .subscribe(message -> {
+          List<Message> shortList = new ArrayList<>();
+          shortList.add(message);
+          hideMessages(shortList);
+        });
+  }
+
   public LiveData<Integer> restoreAllDeletedMessagesForAccount(RedditAccount localCurrentAccount) {
     MutableLiveData<Integer> numUpdated = new MutableLiveData<>();
     if (localCurrentAccount != null) {
@@ -153,4 +167,6 @@ public class MessagesRepository {
     }
     return numUpdated;
   }
+
+
 }

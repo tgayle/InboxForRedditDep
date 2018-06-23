@@ -5,25 +5,7 @@
   xmlns:app="http://schemas.android.com/apk/res-auto"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  tools:context=".fragments.ConversationViewFragment"
   android:background="#ffffffff">
-
-  <android.support.design.widget.AppBarLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:id="@+id/conversation_fragment_appbarlayout">
-
-    <android.support.v7.widget.Toolbar
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:background="?attr/colorPrimary"
-      android:id="@+id/conversation_fragment_toolbar"
-      app:title="Conversation Subject"
-      app:titleTextColor="#ffffff"
-      app:layout_scrollFlags="scroll|snap|enterAlways"
-      app:layout_collapseMode="pin">
-    </android.support.v7.widget.Toolbar>
-  </android.support.design.widget.AppBarLayout>
 
   <android.support.design.widget.FloatingActionButton
     android:id="@+id/conversation_fragment_fab"

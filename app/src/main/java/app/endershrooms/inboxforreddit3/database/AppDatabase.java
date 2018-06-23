@@ -14,16 +14,15 @@ import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 /**
  * Created by Travis on 3/23/2018.
  */
-@Database(entities = {RedditAccount.class, Message.class}, version = 4)
+@Database(entities = {RedditAccount.class, Message.class}, version = 5)
 public abstract class AppDatabase extends RoomDatabase {
   public abstract AccountDao accounts();
   public abstract MessageDao messages();
   public abstract PagedMessageDao pagedMessages();
 
-  public static Migration MIGRATION_3_4 = new Migration(3, 4) {
+  public static Migration MIGRATION_4_5 = new Migration(4, 5) {
     @Override
     public void migrate(@NonNull SupportSQLiteDatabase database) {
-
     }
   };
 }

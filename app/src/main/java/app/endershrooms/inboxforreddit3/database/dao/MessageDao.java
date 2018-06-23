@@ -51,6 +51,8 @@ public abstract class MessageDao {
 
   static final String UPDATE_MARK_ALL_UNREAD_MESSAGES_AS_READ_FOR_ACCOUNT = "UPDATE messages SET isNew = 0 WHERE messageOwner LIKE :account AND isNew = 1";
 
+  static final String SELECT_NEWEST_MESSAGE_FOR_CONVERSATION = "SELECT * FROM messages WHERE parentMessageName LIKE :parentName ORDER BY timestamp DESC LIMIT 1";
+
   @Insert(onConflict = OnConflictStrategy.FAIL)
   public abstract Long insertMessageQuery(Message message);
 
@@ -111,8 +113,14 @@ public abstract class MessageDao {
   @Query(SELECT_NEWEST_MESSAGE_PER_CONVERSATIONS_ONLY_IN_INBOX_FOR_ACCOUNT)
   public abstract LiveData<List<Message>> selectNewestMessageForAllConversationsInInboxForAccount(String account);
 
+  @Query(SELECT_NEWEST_MESSAGE_FOR_CONVERSATION)
+  public abstract Message getNewestMessageForConversation(String parentName);
+
   @Query("SELECT * FROM messages WHERE messageOwner LIKE :messageOwner AND messageName LIKE :messageName LIMIT 1")
   public abstract Message getIndividualMessageFromName(String messageOwner, String messageName);
+
+  @Query("SELECT * FROM messages WHERE messageName LIKE :messageName LIMIT 1")
+  public abstract Message getIndividualMessageFromName(String messageName);
 
   @Query("SELECT * FROM messages WHERE messageOwner LIKE :messageOwner AND messageName IN (:names)")
   public abstract List<Message> getMessagesMatchingName(String messageOwner, String[] names);
@@ -133,5 +141,4 @@ public abstract class MessageDao {
     }
 
   }
-
 }

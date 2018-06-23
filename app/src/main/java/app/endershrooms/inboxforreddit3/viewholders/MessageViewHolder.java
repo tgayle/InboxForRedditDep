@@ -105,7 +105,8 @@ public abstract class MessageViewHolder extends ViewHolder {
 
         @Override
         public boolean areContentsTheSame(Message oldItem, Message newItem) {
-          return oldItem.equals(newItem);
+//          return oldItem.equals(newItem);
+          return false; //return false so that the item is always updated so that time since last msg is accurate?
         }
       };
 

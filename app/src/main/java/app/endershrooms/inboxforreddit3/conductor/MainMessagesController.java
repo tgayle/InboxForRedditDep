@@ -64,7 +64,7 @@ public class MainMessagesController extends LifecycleActivityController {
     //TODO: Viewing images and webpages in here.
     //TODO: Hide/Delete messages locally.
 
-    toolbar = getLifecycleActivity().findViewById(R.id.main_messages_frag_toolbar);
+    toolbar = getLifecycleActivity().findViewById(R.id.messages_activity_toolbar);
     activityViewModel = ViewModelProviders.of(getLifecycleActivity()).get(MessagesActivityViewModel.class);
     View view = inflater.inflate(R.layout.activity_messages_fragment, container,false);
     dataModel = activityViewModel.getDataModel();
