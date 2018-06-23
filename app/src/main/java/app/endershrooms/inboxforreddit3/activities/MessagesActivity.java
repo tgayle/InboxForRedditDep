@@ -15,7 +15,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.adapters.AccountsListAdapter;
-import app.endershrooms.inboxforreddit3.conductor.MainMessagesController;
+import app.endershrooms.inboxforreddit3.conductor.mainmessagesscreen.MainMessagesController;
 import app.endershrooms.inboxforreddit3.interfaces.OnAccountListInteraction;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel;

@@ -16,6 +16,7 @@ import app.endershrooms.inboxforreddit3.viewholders.MessageViewHolder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -76,7 +77,12 @@ public class ConversationPreviewAdapter extends
 
   @Override
   public void removeSelectedItem(Message item) {
-
+    for (Entry<PreviewViewHolder, Message> entry : selectedItems.entrySet()) {
+      if (entry.getValue() == item) {
+        markItemSelected(entry.getKey(), entry.getValue());
+        break;
+      }
+    }
   }
 
   @Override
@@ -86,10 +92,6 @@ public class ConversationPreviewAdapter extends
     }
     selectedItems.clear();
     numItemsSelected.set(0);
-  }
-
-  public void allowItemSelection(boolean enabled) {
-    itemSelectionModeEnabled = enabled;
   }
 
   @Override
@@ -103,6 +105,16 @@ public class ConversationPreviewAdapter extends
     selectedItems.put(vh, item);
     Log.d("PreviewAdapter", "Num selected: " + numItemsSelected.incrementAndGet());
     vh.setMessageSelected(true);
+  }
+
+  @Override
+  public void enableItemSelection() {
+    itemSelectionModeEnabled = true;
+  }
+
+  @Override
+  public void disableItemSelection() {
+    itemSelectionModeEnabled = false;
   }
 
   public class PreviewViewHolder extends MessageViewHolder {

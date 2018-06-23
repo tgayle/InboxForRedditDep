@@ -1,4 +1,4 @@
-package app.endershrooms.inboxforreddit3.conductor;
+package app.endershrooms.inboxforreddit3.conductor.conversationview;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
@@ -20,6 +20,7 @@ import app.endershrooms.inboxforreddit3.BundleCreator;
 import app.endershrooms.inboxforreddit3.MiscFuncs;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.adapters.ConversationFullAdapter;
+import app.endershrooms.inboxforreddit3.conductor.LifecycleActivityController;
 import app.endershrooms.inboxforreddit3.models.reddit.ConversationViewInfo;
 import app.endershrooms.inboxforreddit3.models.reddit.Message;
 import app.endershrooms.inboxforreddit3.models.reddit.RedditAccount;
@@ -28,7 +29,7 @@ import app.endershrooms.inboxforreddit3.viewmodels.model.MessagesActivityDataMod
 import app.endershrooms.inboxforreddit3.views.CustomLinearLayoutManager;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-class ConversationViewController extends LifecycleActivityController {
+public class ConversationViewController extends LifecycleActivityController {
 
   private AtomicBoolean didFirstLoad = new AtomicBoolean(false);
   private Toolbar toolbarLayout;

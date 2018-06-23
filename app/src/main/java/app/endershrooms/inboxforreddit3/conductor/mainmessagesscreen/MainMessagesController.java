@@ -1,4 +1,4 @@
-package app.endershrooms.inboxforreddit3.conductor;
+package app.endershrooms.inboxforreddit3.conductor.mainmessagesscreen;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
@@ -12,8 +12,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.ActionMode;
-import android.view.ActionMode.Callback;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -26,6 +24,8 @@ import app.endershrooms.inboxforreddit3.MiscFuncs;
 import app.endershrooms.inboxforreddit3.R;
 import app.endershrooms.inboxforreddit3.adapters.ConversationPreviewAdapter;
 import app.endershrooms.inboxforreddit3.adapters.ConversationPreviewAdapter.PreviewViewHolder;
+import app.endershrooms.inboxforreddit3.conductor.LifecycleActivityController;
+import app.endershrooms.inboxforreddit3.conductor.conversationview.ConversationViewController;
 import app.endershrooms.inboxforreddit3.interfaces.OnMessageSelectedInterface;
 import app.endershrooms.inboxforreddit3.models.reddit.Message;
 import app.endershrooms.inboxforreddit3.viewmodels.MessagesActivityViewModel;
@@ -37,7 +37,6 @@ import app.endershrooms.inboxforreddit3.views.CustomLinearLayoutManager;
 import app.endershrooms.inboxforreddit3.views.UnreadMessageButtonView;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
-import java.util.List;
 
 public class MainMessagesController extends LifecycleActivityController {
   private ConversationPreviewAdapter messageConversationAdapter;
@@ -86,60 +85,19 @@ public class MainMessagesController extends LifecycleActivityController {
 
       @Override
       public void onMessageLongSelect(ViewHolder previewViewHolder, Message message) {
-        getLifecycleActivity().startActionMode(new Callback() {
-          ActionMode mode = null;
-          @Override
-          public boolean onCreateActionMode(ActionMode localActionModel, Menu menu) {
-            localActionModel.getMenuInflater().inflate(R.menu.menu_context_conversation_action, menu);
-            swipeRefreshLayout.setEnabled(false);
-            messageConversationAdapter.allowItemSelection(true);
-            messageConversationAdapter.markItemSelected((PreviewViewHolder) previewViewHolder, message);
-            mode = localActionModel;
-            return true;
-          }
-
-          @Override
-          public boolean onPrepareActionMode(ActionMode actionMode, Menu menu) {
-            return false;
-          }
-
-          @Override
-          public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
-            switch (menuItem.getItemId()) {
-              case R.id.delete_conversation:
-                //TODO: Finish this.
-                List<Message> selectedMessages = messageConversationAdapter.getSelectedItems();
-                if (selectedMessages.size() > 0) {
-                  new AlertDialog.Builder(getView().getContext())
-                      .setTitle("Delete these " + selectedMessages.size() + " messages?")
-                      .setMessage("After deleting, these messages can still be found in the deleted tab to the left.")
-                      .setPositiveButton("Delete", (dialogInterface, i) -> {
-                        controllerViewModel.deleteMessages(messageConversationAdapter.getSelectedItems());
-                        Log.d("ActionMode", "Finish should have happened.");
-                      })
-                      //TODO: Messages come back on refresh.
-                      .setNegativeButton("Cancel", (dialogInterface, i) -> {
-                        dialogInterface.dismiss();
-                      })
-                      .setOnDismissListener(dialogInterface -> {
-                        mode.finish();
-                      })
-                      .show();
-                }
-                return true;
-              default:
-                  return false;
-            }
-          }
-
-          @Override
-          public void onDestroyActionMode(ActionMode actionMode) {
-            mode = null;
-            swipeRefreshLayout.setEnabled(true);
-            messageConversationAdapter.allowItemSelection(false);
-            messageConversationAdapter.clearSelectedItems();
-          }
-        });
+        getLifecycleActivity().startActionMode(new MessageSelectedActionMode<>(getView().getContext(),
+            messageConversationAdapter, itemsToDelete -> {
+            controllerViewModel.deleteMessages(itemsToDelete);
+            return null;
+        }, () -> {
+          swipeRefreshLayout.setEnabled(false);
+          messageConversationAdapter
+              .markItemSelected((PreviewViewHolder) previewViewHolder, message);
+          return null;
+        }, () -> {
+          swipeRefreshLayout.setEnabled(true);
+          return null;
+        }));
       }
     });
     messageRv.setAdapter(messageConversationAdapter);
@@ -186,8 +144,6 @@ public class MainMessagesController extends LifecycleActivityController {
   private void prepareLogic(View rootView) {
     swipeRefreshLayout.setOnRefreshListener(this::startRefresh);
     prepareLoadingStatus(rootView);
-
-
   }
 
   private void startRefresh() {
