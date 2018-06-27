@@ -112,7 +112,7 @@ public class MainMessagesController extends LifecycleActivityController {
     dataModel.getCurrentAccount().observe(this, currentAccount -> {
       if (currentAccount != null) {
         scrollRecyclerViewToTop(messageRv);
-        if (currentAccount.getAccountIsNew()) { //Load all messages if new
+        if (currentAccount.getAccountIsNew()) { //Load all messages if isNew
           controllerViewModel.loadAllMessages();
           activityViewModel.setAccountIsNew(false);
         } else {
@@ -249,6 +249,9 @@ public class MainMessagesController extends LifecycleActivityController {
     switch (item.getItemId()) {
       case R.id.main_messages_controller_menu_refresh:
         startRefresh();
+        return true;
+      case R.id.force_load_all_messages:
+        controllerViewModel.loadAllMessages();
         return true;
       default:
         return false;

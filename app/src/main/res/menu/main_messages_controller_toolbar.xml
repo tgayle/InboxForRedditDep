@@ -9,10 +9,14 @@
     app:showAsAction="always"/>
 
   <item
+    android:title="Force Load Messages"
+    app:showAsAction="never"
+    android:id="@+id/force_load_all_messages"/>
+
+  <item
     android:title="Refresh"
     app:showAsAction="never"
     android:id="@+id/main_messages_controller_menu_refresh">
-
   </item>
 
 </menu>

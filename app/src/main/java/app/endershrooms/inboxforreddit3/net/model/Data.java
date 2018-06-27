@@ -10,7 +10,7 @@ public class Data {
   public String subject;
   public String author;
   public String dest;
-  @SerializedName("new")
+  @SerializedName("isNew")
   public boolean isNew;
   public String body_html;
   public long created_utc;

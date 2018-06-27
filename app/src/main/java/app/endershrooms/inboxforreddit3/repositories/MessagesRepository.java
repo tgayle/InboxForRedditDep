@@ -144,7 +144,7 @@ public class MessagesRepository {
         });
   }
 
-  //FIXME: If you get a new message it'll show back up here since you only hide the newest thing in a conversation i think
+  //FIXME: If you get a isNew message it'll show back up here since you only hide the newest thing in a conversation i think
   @SuppressLint("CheckResult")
   public void hideMessageConversation(String parentName) {
     Single.fromCallable(() -> messageDao.getNewestMessageForConversation(parentName))
